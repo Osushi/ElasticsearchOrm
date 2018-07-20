@@ -17,8 +17,6 @@ return [
                 ]
             ],
 
-            'index' => env('ES_INDEX', 'my_index'),
-
             'logging' => [
                 'enabled'   => env('ES_LOGGING_ENABLED', false),
                 'level'     => env('ES_LOGGING_LEVEL', 'all'),

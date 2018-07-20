@@ -67,9 +67,6 @@ class Connection
         $config = $this->config["connections"][$name];
 
         $query = new Query($this->connections[$name]);
-        if (array_key_exists("index", $config) and $config["index"] != "") {
-            $query->index($config["index"]);
-        }
         return $query;
     }
 
