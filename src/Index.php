@@ -6,17 +6,17 @@ use Elasticsearch\Client;
 
 class Index
 {
-    protected $index;
+    private $index;
 
-    protected $callback;
+    private $callback;
 
-    protected $connection;
+    private $connection;
 
-    protected $shards = 5;
+    private $shards = 5;
 
-    protected $replicas = 0;
+    private $replicas = 0;
 
-    protected $mappings = [];
+    private $mappings = [];
 
     public function __construct(string $index, $callback = null)
     {

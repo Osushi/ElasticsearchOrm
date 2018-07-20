@@ -6,15 +6,17 @@ abstract class Model
 {
     protected $connection;
 
+    protected $aliases = [];
+
     protected $index;
 
     protected $type;
 
     protected $mappings = [];
 
-    protected $attributes = [];
+    private $attributes = [];
 
-    protected $exists = false;
+    private $exists = false;
 
     private $_id;
 
@@ -74,13 +76,13 @@ abstract class Model
     {
         $connection = new Connection();
         $query = $connection->connection($this->getConnection())->setModel($this);
-        if ($index = $this->getIndex()) {
+        if ($index = $this->index) {
             $query->index($index);
         }
-        if ($type = $this->getType()) {
+        if ($type = $this->type) {
             $query->type($type);
         }
-        if ($type = $this->getMappings()) {
+        if ($type = $this->mappings) {
             $query->mappings($mappings);
         }
         return $query;
@@ -91,10 +93,10 @@ abstract class Model
         $fields = array_except($this->attributes, ['_id']);
 
         if ($this->exists) {
-            $this->newQuery()->id($this->getId())->update($fields);
+            $this->newQuery()->id($this->_id)->update($fields);
         } else {
             $query = $this->newQuery();
-            $query->insert($fields, $this->getId());
+            $query->insert($fields, $this->_id);
             $this->exists = true;
         }
         return $this;

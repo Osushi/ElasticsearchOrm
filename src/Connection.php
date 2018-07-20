@@ -6,10 +6,11 @@ use Elasticsearch\ClientBuilder;
 
 class Connection
 {
-    protected $connection;
-    protected $connections = [];
+    private $connection;
 
-    protected $config;
+    private $connections = [];
+
+    private $config;
 
     public function __construct()
     {

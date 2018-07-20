@@ -6,17 +6,17 @@ use Osushi\ElasticsearchOrm\Model;
 
 class Query
 {
-    protected $connection;
+    private $connection;
 
-    protected $id;
+    private $id;
 
-    protected $index;
+    private $index;
 
-    protected $type;
+    private $type;
 
-    protected $mappings = [];
+    private $mappings = [];
 
-    protected $model;
+    private $model;
 
     public function __construct($connection = null)
     {
