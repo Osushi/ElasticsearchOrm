@@ -78,7 +78,7 @@ $es = Connection::build([
     'logging' => [
         'enabled'   => env('ES_LOGGING_ENABLED',false),
         'level'     => env('ES_LOGGING_LEVEL','all'),
-        'location'  => env('ES',base_path('storage/logs/elasticsearch.log'))
+        'location'  => env('ES_LOGGING_LOCATION',base_path('storage/logs/elasticsearch.log'))
     ],  
 ]);
 ```
