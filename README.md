@@ -1,4 +1,5 @@
-## [WIP]
+## [WIP] ElasticsearchOrm
+[![Packagist](https://img.shields.io/packagist/v/osushi/elasticsearch-orm.svg)](https://packagist.org/packages/osushi/elasticsearch-orm)
 
 ## Requirements
 
