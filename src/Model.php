@@ -6,8 +6,6 @@ abstract class Model
 {
     protected $connection;
 
-    protected $aliases = [];
-
     protected $index;
 
     protected $type;
@@ -95,8 +93,9 @@ abstract class Model
         if ($this->exists) {
             $this->newQuery()->id($this->_id)->update($fields);
         } else {
-            $query = $this->newQuery();
-            $query->insert($fields, $this->_id);
+            $created = $this->newQuery();
+            $created = $created->insert($fields, $this->_id);
+            $this->attributes['_id'] = $this->_id = $created->_id;
             $this->exists = true;
         }
         return $this;
