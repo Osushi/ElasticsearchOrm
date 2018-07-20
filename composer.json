@@ -1,0 +1,34 @@
+{
+    "name": "osushi/elasticsearch-orm",
+    "description": "[WIP]",
+    "keywords": ["elasticsearch", "es", "orm", "model", "laravel"],
+    "license": "MIT",
+    "type": "package",
+    "homepage": "https://github.com/Osushi/ElasticsearchOrm",
+    "authors": [
+        {
+            "name": "Osushi",
+            "homepage": "https://github.com/Osushi",
+            "role": "Author"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "elasticsearch/elasticsearch": "~6.0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Osushi\\ElasticsearchOrm\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Osushi\\ElasticsearchOrm\\Providers\\ElasticsearchOrmServiceProvider"
+            ]
+        }
+    }
+}
