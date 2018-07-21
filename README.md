@@ -107,17 +107,14 @@ $sample->create(function($index){
     $index->shards(5)->replicas(1)->mapping([
         'my_type' => [
             'properties' => [
-                'first_name' => [
+                'my_field' => [
                     'type' => 'string',
                 ],
-                'age' => [
-                    'type' => 'integer'
-                ]
             ]
         ]
     ]);
 
-};
+});
 
 [client]
 $es->index("index")->create(function($index){
@@ -125,12 +122,9 @@ $es->index("index")->create(function($index){
     $index->shards(5)->replicas(1)->mapping([
         'my_type' => [
             'properties' => [
-                'first_name' => [
+                'my_field' => [
                     'type' => 'string',
                 ],
-                'age' => [
-                    'type' => 'integer'
-                ]
             ]
         ]
     ]);
