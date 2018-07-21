@@ -175,10 +175,21 @@ $es->index('index')->type('type')->insert(['field' => 'test'], 'id');
 $es->index('index')->type('type')->id('id')->insert(['field' => 'test']);
 ```
 
+### Options
+---
+
+#### Get elasticsearch raw client
+```php
+[model]
+$sample->raw(); # Elasticsearch\Client
+    
+[client]
+$es->raw(); # Elasticsearch\Client
+```
+
 ## Inspire packages
 - https://github.com/basemkhirat/elasticsearch 
 
 ## License
-
 MIT
 
