@@ -101,6 +101,11 @@ class Query
         return (object) $this->connection->index($params);
     }
 
+    public function raw()
+    {
+        return $this->connection;
+    }
+
     public function __call(string $method, $parameters)
     {
         if (method_exists($this, $method)) {
