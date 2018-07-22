@@ -32,7 +32,8 @@ class Index
     public function create()
     {
         if (is_callback_function($this->callback)) {
-            $this->callback($this);
+            $callback = $this->callback;
+            $callback($this);
         }
 
         $params = [
