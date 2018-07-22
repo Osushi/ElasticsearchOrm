@@ -20,9 +20,14 @@ abstract class Model
 
     public function __construct($attributes = [], $exists = false)
     {
-        $this->attributes = $attributes;
+        $this->fill($attributes);
         $this->exists = $exists;
         $this->connection = $this->getConnection();
+    }
+
+    public function fill(array $attributes)
+    {
+        $this->attributes = $attributes;
     }
 
     public function getConnection()
