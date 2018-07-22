@@ -161,6 +161,8 @@ $es->index("index")->exists();
 [model]
 $sample->_id = 'id'; # optional
 $sample->field = 'test';
+# or
+$sample->fill(['_id' => 'id', 'field' => 'test']);
 $sample->save();
     
 [client]
