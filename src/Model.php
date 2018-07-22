@@ -28,6 +28,7 @@ abstract class Model
     public function fill(array $attributes)
     {
         $this->attributes = $attributes;
+        return $this;
     }
 
     public function getConnection()
