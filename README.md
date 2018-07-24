@@ -171,6 +171,24 @@ $es->index('index')->type('type')->insert(['field' => 'test'], 'id');
 $es->index('index')->type('type')->id('id')->insert(['field' => 'test']);
 ```
 
+#### Bulk insert options
+
+```php
+[model]
+$this->sample->bulk([
+    ['field' => 'test1', '_id' => 'id'],
+    ['field' => 'test2'], # Attach automatic ids
+]);
+
+[client]
+$es->index('index')->type('type')->bulk(function ($bulk) {
+
+    $bulk->id('id')->insert(["field" => "test1"]);
+    $bulk->insert(["field" => "test2"]); # Attach automatic ids
+
+});
+```
+
 ### Options
 ---
 
