@@ -3,6 +3,7 @@
 namespace Osushi\ElasticsearchOrm;
 
 use Osushi\ElasticsearchOrm\Model;
+use Osushi\ElasticsearchOrm\Classes\Bulk;
 
 class Query
 {
@@ -29,10 +30,20 @@ class Query
         return $this;
     }
 
+    public function getIndex()
+    {
+        return $this->index;
+    }
+
     public function type(string $type)
     {
         $this->type = $type;
         return $this;
+    }
+
+    public function getType()
+    {
+        return $this->type;
     }
 
     public function mappings(array $mappings = [])
@@ -41,7 +52,7 @@ class Query
         return $this;
     }
 
-    public function id($id = false)
+    public function id($id)
     {
         $this->id = $id;
         return $this;
@@ -99,6 +110,26 @@ class Query
         }
 
         return (object) $this->connection->index($params);
+    }
+
+    public function bulk($data)
+    {
+        $bulk = new Bulk($this);
+        if (is_callback_function($data)) {
+            $data($bulk);
+        } else {
+            $bulk = new Bulk($this);
+            foreach ($data as $value) {
+                if (array_key_exists('_id', $value)) {
+                    $bulk->id($value['_id']);
+                    unset($value['_id']);
+                }
+                $bulk->insert($value);
+            }
+        }
+        $params = $bulk->getBody();
+
+        return (object) $this->connection->bulk($params);
     }
 
     public function raw()
