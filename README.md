@@ -189,6 +189,96 @@ $es->index('index')->type('type')->bulk(function ($bulk) {
 });
 ```
 
+#### Get documents
+
+```php
+[model]
+$this->sample->get();
+
+[client]
+$es->index('index')->type('type')->get();
+```
+
+#### Select only fields
+
+```php
+[model]
+$this->sample->select('field')->get();
+
+[client]
+$es->index('index')->type('type')->select('field')->get();
+```
+
+#### Where clause
+
+```php
+[model]
+$this->sample->where('field', '=', 'test1')->get();
+
+[client]
+$es->index('index')->type('type')->where('field', '=', 'test1')->get();
+```
+
+Here are supported operators:
+```php
+[
+  '=', '!=', '>', '>=', '<', '<=',
+  'like',
+]
+# Default operator is '='.
+# ex. where('field', 'value');
+```
+
+#### Where in clause
+
+```php
+[model]
+$this->sample->whereIn('field', ['test1'])->get();
+
+[client]
+$es->index('index')->type('type')->whereIn('field', ['test1'])->get();
+```
+
+#### Limit and offset
+
+```php
+[model]
+$this->sample->take(1)->skip(1)->get();
+
+[client]
+$es->index('index')->type('type')->take(1)->skip(1)->get();
+```
+
+#### Scroll queries
+```php
+[model]
+$res = $this->sample->scroll('1m')->take(1)->get();
+/*
+dd($res);
+Collection {#206 ▼
+  #items: array:3 [▶]
+  +"total": 3
+  +"max_score": 1.0
+  +"took": 2
+  +"timed_out": false
+  +"scroll_id": "DnF1ZXJ5VGhlbkZldGNoBQ.... ▶"
+  +"shards": {#210 ▶}
+}
+*/
+
+# Run scrolling
+$scrollId = $res->scroll_id;
+$this->sample->scroll('1m')->scrollId($scrollId)->get();
+
+# Clear scrollId
+$this->sample->scrollId($scrollId)->clear();
+
+[client]
+$res = $es->index('index')->type('type')->scroll('1m')->take(1)->get();
+// ...
+```
+
+
 ### Options
 ---
 
