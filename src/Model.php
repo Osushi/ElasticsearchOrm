@@ -14,6 +14,8 @@ abstract class Model
 
     private $attributes = [];
 
+    private $excepts = ['_id'];
+
     private $exists = false;
 
     private $_id;
@@ -94,7 +96,7 @@ abstract class Model
 
     public function save()
     {
-        $fields = array_except($this->attributes, ['_id']);
+        $fields = array_except($this->attributes, $this->excepts);
 
         if ($this->exists) {
             $this->newQuery()->id($this->_id)->update($fields);
@@ -105,6 +107,15 @@ abstract class Model
             $this->exists = true;
         }
         return $this;
+    }
+
+    public function toArray()
+    {
+        $attributes = [];
+        foreach ($this->attributes as $name => $value) {
+            $attributes[$name] = $this->attributes[$name];
+        }
+        return array_except($this->attributes, $this->excepts);
     }
 
     public function __set(string $name, $value)
