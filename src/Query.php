@@ -4,6 +4,7 @@ namespace Osushi\ElasticsearchOrm;
 
 use Osushi\ElasticsearchOrm\Model;
 use Osushi\ElasticsearchOrm\Classes\Bulk;
+use Osushi\ElasticsearchOrm\Classes\InnerHits;
 
 class Query
 {
@@ -22,6 +23,8 @@ class Query
     private $scrollId;
 
     private $scroll;
+
+    private $collapse = [];
 
     private $filter = [];
 
@@ -98,6 +101,10 @@ class Query
 
         if (count($this->filter)) {
             $this->body['query']['bool']['filter'] = $this->filter;
+        }
+
+        if (count($this->collapse)) {
+            $this->body['collapse'] = $this->collapse;
         }
 
         return $this->body;
@@ -257,6 +264,31 @@ class Query
         return $this;
     }
 
+    public function collapse(string $field, $callback = null)
+    {
+        $this->collapse = [
+            'field' => $field,
+        ];
+
+        $innerHits = null;
+        if ($callback) {
+            if (!is_callback_function($callback)) {
+                throw new \Exception("Must be closure on collapse args");
+            }
+
+            $innerHits = new InnerHits;
+            $callback($innerHits);
+
+            $innerHits = $innerHits->build();
+        }
+
+        if ($innerHits) {
+            $this->collapse['inner_hits'] = $innerHits;
+        }
+
+        return $this;
+    }
+
     public function clear()
     {
         return $this->connection->clearScroll([
@@ -315,17 +347,25 @@ class Query
             $model->setIndex($row['_index']);
             $model->setType($row['_type']);
             $model->_id = $row['_id'];
+            if (isset($row['fields'])) {
+                $model->setFields($row['fields']);
+            }
+            if (isset($row['inner_hits'])) {
+                foreach ($row['inner_hits'] as $name => $innerHits) {
+                    $model->setInnerHits($name, $this->hydrate($innerHits));
+                }
+            }
 
             $models[] = $model;
         }
 
         $collection = new Collection($models);
-        $collection->total = $result['hits']['total'];
-        $collection->max_score = $result['hits']['max_score'];
-        $collection->took = $result['took'];
-        $collection->timed_out = $result['timed_out'];
+        $collection->total = isset($result['hits']['total']) ? $result['hits']['total'] : null;
+        $collection->max_score = isset($result['hits']['max_score']) ? $result['hits']['max_score'] : null;
+        $collection->took = isset($result['took']) ? $result['took'] : null;
+        $collection->timed_out = isset($result['timed_out']) ? $result['timed_out'] : null;
         $collection->scroll_id = isset($result['_scroll_id']) ? $result['_scroll_id'] : null;
-        $collection->shards = (object) $result['_shards'];
+        $collection->shards = isset($result['_shards']) ? (object) $result['_shards'] : null;
 
         return $collection;
     }
