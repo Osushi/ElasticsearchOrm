@@ -141,6 +141,16 @@ abstract class Model
         return $this;
     }
 
+    public function delete()
+    {
+        if (!$this->exists) {
+            return false;
+        }
+        $this->newQuery()->id($this->_id)->delete();
+        $this->exists = false;
+        return $this;
+    }
+
     public function toArray()
     {
         $attributes = [];
