@@ -189,6 +189,42 @@ $es->index('index')->type('type')->bulk(function ($bulk) {
 });
 ```
 
+#### Delete a document
+
+```php
+[model]
+$this->sample->id('id')->delete();
+# or
+$samples = $this->sample->get();
+foreach ($samples as $sample) {
+    $sample->delete();
+}
+
+[client]
+$es->index('index')->type('type')->id('id')->delete();
+```
+
+#### Delete documents by queries
+```
+[model]
+$this->sample->bulk([
+    ['field1' => 'test', 'field2' => 1],
+    ['field1' => 'test', 'field2' => 2],
+    ['field1' => 'test', 'field2' => 3],
+    ['field1' => 'test', 'field2' => 4],
+    ['field1' => 'test', 'field2' => 5],
+]);
+$this->sample->where('field2', '>', 1)->deleteByQuery();
+/*
+Results: 
+$this->sample->get()->toArray();
+-> ['field1' => 'test', 'field2' => 1]
+*/
+[client]
+// ...
+```
+
+
 #### Get documents
 
 ```php
