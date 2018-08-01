@@ -249,6 +249,70 @@ $this->sample->take(1)->skip(1)->get();
 $es->index('index')->type('type')->take(1)->skip(1)->get();
 ```
 
+#### Field Collapsing queries
+
+https://www.elastic.co/guide/en/elasticsearch/reference/6.2/search-request-collapse.html#search-request-collapse
+
+```php
+$this->sample->bulk([
+    ['field1' => 'test', 'field2' => 1],
+    ['field1' => 'test', 'field2' => 2],
+    ['field1' => 'test', 'field2' => 3],
+    ['field1' => 'test', 'field2' => 4],
+    ['field1' => 'test', 'field2' => 5],
+]);
+
+[model]
+$res = $this->sample->collapse('field1.keyword', function ($innerHits) {
+    $innerHits->name('name')->take(10)->skip(0)->orderBy('field2')->add();
+})->get();
+
+foreach ($res as $v) {
+    dd($v->getInnerHit('name')->toArray());
+    /*
+    array:5 [▼
+      0 => array:2 [▼
+        "field1" => "test"
+        "field2" => 1
+      ]
+      1 => array:2 [▼
+        "field1" => "test"
+        "field2" => 2
+       ]
+      2 => array:2 [▼
+        "field1" => "test"
+        "field2" => 3
+      ]
+      3 => array:2 [▼
+        "field1" => "test"
+        "field2" => 4
+      ]
+      4 => array:2 [▼
+        "field1" => "test"
+        "field2" => 5
+      ]
+    ]  
+    */
+    dd($v->getInnerHits());
+    /*
+    array:1 [▼
+      "name" => Collection {#208 ▶}
+    ]
+    */
+    dd($v->getFields());
+    /*
+    array:1 [▼
+      "field1.keyword" => array:1 [▼
+        0 => "test"
+      ]
+    ]
+    */
+}
+
+[client]
+// ...
+```
+
 #### Scroll queries
 ```php
 [model]
