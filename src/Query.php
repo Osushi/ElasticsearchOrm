@@ -43,6 +43,11 @@ class Query
         'like',
     ];
 
+    const DEFAULT_REQUEST_TYPE = 0;
+    const GET_REQUEST_TYPE = 1;
+    const DELETE_BY_QUERY_REQUEST_TYPE = 2;
+    private $requestType = self::DEFAULT_REQUEST_TYPE;
+
     public function __construct($connection = null)
     {
         $this->connection = $connection;
@@ -103,8 +108,10 @@ class Query
             $this->body['query']['bool']['filter'] = $this->filter;
         }
 
-        if (count($this->collapse)) {
-            $this->body['collapse'] = $this->collapse;
+        if (in_array($this->requestType, [self::GET_REQUEST_TYPE])) {
+            if (count($this->collapse)) {
+                $this->body['collapse'] = $this->collapse;
+            }
         }
 
         return $this->body;
@@ -164,6 +171,26 @@ class Query
         return (object) $this->connection->index($params);
     }
 
+    public function delete($id = null)
+    {
+        if ($id) {
+            $this->id($id);
+        }
+
+        $params = [];
+        if ($this->index) {
+            $params['index'] = $this->index;
+        }
+        if ($this->type) {
+            $params['type'] = $this->type;
+        }
+        if ($this->id) {
+            $params['id'] = $this->id;
+        }
+
+        return (object) $this->connection->delete($params);
+    }
+
     public function bulk($data)
     {
         $bulk = new Bulk($this);
@@ -217,8 +244,16 @@ class Query
 
     public function get()
     {
+        $this->requestType = self::GET_REQUEST_TYPE;
         $result = $this->request();
         return $this->hydrate($result);
+    }
+
+    public function deleteByQuery()
+    {
+        $this->requestType = self::DELETE_BY_QUERY_REQUEST_TYPE;
+        $result = $this->request();
+        return (object) $result;
     }
 
     public function where(string $name, string $operator = '=', $value = null)
@@ -306,18 +341,27 @@ class Query
 
     private function request()
     {
-        if ($this->scrollId) {
-            $result = $this->connection->scroll([
-                'scroll' => $this->scroll,
-                'scroll_id' => $this->scrollId,
-            ]);
-        } else {
-            $result = $this->connection->search($this->query());
+        switch ($this->requestType) {
+        case 1:
+            if ($this->scrollId) {
+                $result = $this->connection->scroll([
+                    'scroll' => $this->scroll,
+                    'scroll_id' => $this->scrollId,
+                ]);
+            } else {
+                $result = $this->connection->search($this->build());
+            }
+            break;
+        case 2:
+            $result = $this->connection->deleteByQuery($this->build());
+            break;
         }
+
+        $this->requestType = self::DEFAULT_REQUEST_TYPE;
         return $result;
     }
 
-    private function query()
+    private function build()
     {
         $query = [];
 
@@ -328,11 +372,14 @@ class Query
         }
 
         $query['body'] = $this->getBody();
-        $query['from'] = $this->skip;
-        $query['size'] = $this->take;
 
-        if ($this->scroll) {
-            $query['scroll'] = $this->scroll;
+        if (in_array($this->requestType, [self::GET_REQUEST_TYPE])) {
+            $query['from'] = $this->skip;
+            $query['size'] = $this->take;
+
+            if ($this->scroll) {
+                $query['scroll'] = $this->scroll;
+            }
         }
 
         return $query;
