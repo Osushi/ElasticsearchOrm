@@ -14,6 +14,10 @@ abstract class Model
 
     private $attributes = [];
 
+    private $fields = [];
+
+    private $inner_hits = [];
+
     private $excepts = ['_id'];
 
     private $exists = false;
@@ -76,6 +80,34 @@ abstract class Model
     public function getId()
     {
         return $this->_id;
+    }
+
+    public function setFields(array $fields)
+    {
+        $this->fields = $fields;
+    }
+
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    public function setInnerHits(string $name, Collection $collection)
+    {
+        $this->inner_hits[$name] = $collection;
+    }
+
+    public function getInnerHits()
+    {
+        return $this->inner_hits;
+    }
+
+    public function getInnerHit(string $name)
+    {
+        if (array_key_exists($name, $this->inner_hits)) {
+            return $this->inner_hits[$name];
+        }
+        return false;
     }
 
     protected function newQuery()
