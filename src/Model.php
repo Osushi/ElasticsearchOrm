@@ -176,6 +176,11 @@ abstract class Model
         return null;
     }
 
+    public function __isset(string $name)
+    {
+        return array_key_exists($name, $this->attributes);
+    }
+
     public function __call(string $method, $parameters)
     {
         return $this->newQuery()->$method(...$parameters);
