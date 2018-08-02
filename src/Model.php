@@ -110,7 +110,7 @@ abstract class Model
         return false;
     }
 
-    protected function newQuery()
+    public function newQuery()
     {
         $connection = new Connection();
         $query = $connection->connection($this->getConnection())->setModel($this);
