@@ -120,7 +120,7 @@ abstract class Model
         if ($type = $this->type) {
             $query->type($type);
         }
-        if ($type = $this->mappings) {
+        if ($mappings = $this->mappings) {
             $query->mappings($mappings);
         }
         return $query;
