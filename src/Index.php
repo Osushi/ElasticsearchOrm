@@ -39,7 +39,7 @@ class Index
         $params = [
             'index' => $this->index,
             'body' => [
-                "settings" => [
+                'settings' => [
                     'number_of_shards' => $this->shards,
                     'number_of_replicas' => $this->replicas,
                 ],
@@ -47,7 +47,7 @@ class Index
         ];
 
         if (count($this->mappings)) {
-            $params["body"]["mappings"] = $this->mappings;
+            $params['body']['mappings'] = $this->mappings;
         }
 
         return $this->connection->indices()->create($params);
