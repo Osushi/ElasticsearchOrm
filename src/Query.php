@@ -38,6 +38,8 @@ class Query
 
     private $skip = 0;
 
+    private $sort = [];
+
     private $operators = [
         '=', '!=', '>', '>=', '<', '<=',
         'like',
@@ -101,11 +103,19 @@ class Query
         }
 
         if (count($this->must)) {
-            $body['query']['bool']['must'] = $this->must;
+            $this->body['query']['bool']['must'] = $this->must;
         }
 
         if (count($this->filter)) {
             $this->body['query']['bool']['filter'] = $this->filter;
+        }
+
+        if (count($this->sort)) {
+            $sortFields = array_key_exists('sort', $this->body) ? $this->body['sort'] : [];
+            $this->body['sort'] = array_unique(
+                array_merge($sortFields, $this->sort),
+                SORT_REGULAR
+            );
         }
 
         if (in_array($this->requestType, [self::GET_REQUEST_TYPE])) {
@@ -226,6 +236,14 @@ class Query
     public function skip(int $skip)
     {
         $this->skip = $skip;
+        return $this;
+    }
+
+    public function orderBy(string $field, string $order = 'asc')
+    {
+        $this->sort[] = [
+            $field => $order
+        ];
         return $this;
     }
 
