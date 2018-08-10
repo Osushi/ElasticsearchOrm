@@ -275,6 +275,16 @@ $this->sample->whereIn('field', ['test1'])->get();
 $es->index('index')->type('type')->whereIn('field', ['test1'])->get();
 ```
 
+#### Sorting
+
+```php
+[model]
+$this->sample->orderBy('created_at', 'desc')->get();
+
+[client]
+$es->index('index')->type('type')->->orderBy('created_at')->get(); # order is `asc`
+```
+
 #### Limit and offset
 
 ```php
