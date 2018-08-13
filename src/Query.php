@@ -5,6 +5,7 @@ namespace Osushi\ElasticsearchOrm;
 use Osushi\ElasticsearchOrm\Model;
 use Osushi\ElasticsearchOrm\Classes\Bulk;
 use Osushi\ElasticsearchOrm\Classes\InnerHits;
+use Osushi\ElasticsearchOrm\Classes\Aggregation;
 
 class Query
 {
@@ -25,6 +26,8 @@ class Query
     private $scroll;
 
     private $collapse = [];
+
+    private $aggregation = [];
 
     private $filter = [];
 
@@ -121,6 +124,9 @@ class Query
         if (in_array($this->requestType, [self::GET_REQUEST_TYPE])) {
             if (count($this->collapse)) {
                 $this->body['collapse'] = $this->collapse;
+            }
+            if (count($this->aggregation)) {
+                $this->body['aggregations'] = $this->aggregation;
             }
         }
 
@@ -317,6 +323,25 @@ class Query
         return $this;
     }
 
+    public function aggregation(string $name, $callback)
+    {
+        if (!is_callback_function($callback)) {
+            throw new \Exception("Must be closure on aggregation args");
+        }
+
+        $aggregation = new Aggregation($name);
+        $callback($aggregation);
+
+        $this->aggregation = $aggregation->build();
+
+        return $this;
+    }
+
+    public function aggs(string $name, $callback)
+    {
+        return $this->aggregation($name, $callback);
+    }
+
     public function collapse(string $field, $callback = null)
     {
         $this->collapse = [
@@ -431,6 +456,7 @@ class Query
         $collection->timed_out = isset($result['timed_out']) ? $result['timed_out'] : null;
         $collection->scroll_id = isset($result['_scroll_id']) ? $result['_scroll_id'] : null;
         $collection->shards = isset($result['_shards']) ? (object) $result['_shards'] : null;
+        $collection->aggregations = isset($result['aggregations']) ? (object) $result['aggregations'] : null;
 
         return $collection;
     }
