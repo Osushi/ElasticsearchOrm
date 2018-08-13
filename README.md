@@ -388,6 +388,88 @@ $res = $es->index('index')->type('type')->scroll('1m')->take(1)->get();
 // ...
 ```
 
+### aggregations
+---
+
+```php
+[model]
+$this->sample->bulk([
+  ['product' => 1, 'price' => 200, 'category' => 1],
+  ['product' => 1, 'price' => 100, 'category' => 1],
+  ['product' => 1, 'price' => 50, 'category' => 2],
+  ['product' => 2, 'price' => 200, 'category' => 1],
+  ['product' => 2, 'price' => 100, 'category' => 1],
+  ['product' => 2, 'price' => 50, 'category' => 2],
+  ['product' => 3, 'price' => 200, 'category' => 1],
+  ['product' => 3, 'price' => 100, 'category' => 1],
+  ['product' => 3, 'price' => 50, 'category' => 2],
+  ['product' => 4, 'price' => 200, 'category' => 1],
+  ['product' => 4, 'price' => 100, 'category' => 1],
+  ['product' => 4, 'price' => 50, 'category' => 2],
+  ['product' => 5, 'price' => 200, 'category' => 1],
+  ['product' => 5, 'price' => 100, 'category' => 1],
+  ['product' => 5, 'price' => 50, 'category' => 2],
+]);
+
+$res = $this->sample->take(0)->aggs('products', function ($groups) {
+  $groups->terms('product');
+  $groups->aggs('price_min', function ($min) {
+    $min->min('price');
+  });
+  $groups->aggs('price_max', function ($max) {
+    $max->max('price');
+  });
+  $groups->aggs('product::categories', function ($subGroups) {
+    $subGroups->terms('category');
+  });
+})->get();
+
+var_dump($res->aggregations->products);
+/*
+array (size=3)
+  'doc_count_error_upper_bound' => int 0
+  'sum_other_doc_count' => int 0
+  'buckets' => 
+    array (size=5)
+      0 => 
+        array (size=5)
+          'key' => int 1
+          'doc_count' => int 3
+          'price_min' => 
+            array (size=1)
+              'value' => float 50
+          'product::categories' => 
+            array (size=3)
+              'doc_count_error_upper_bound' => int 0
+              'sum_other_doc_count' => int 0
+              'buckets' => 
+                array (size=2)
+                  0 => 
+                    array (size=2)
+                      'key' => int 1
+                      'doc_count' => int 2
+                  1 => 
+                    array (size=2)
+                      'key' => int 2
+                      'doc_count' => int 1
+          'price_max' => 
+            array (size=1)
+              'value' => float 200
+      1 => // ...
+      2 => // ...
+      3 => // ...
+      4 => // ...
+*/
+
+[client]
+// ...
+```
+
+Here are supportted aggregations.
++ Terms Aggregation - `terms(string $field, int $size = 10)`
++ Min Aggregation - `min(string $field)`
++ Max Aggregation - `max(string $field)`
++ Top Hits Aggregation - `topHits(array $sorts, int $size = 10, int $from = 0)`
 
 ### Options
 ---
