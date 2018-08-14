@@ -469,7 +469,7 @@ Here are supportted aggregations.
 + Terms Aggregation - `terms(string $field, int $size = 10)`
 + Min Aggregation - `min(string $field)`
 + Max Aggregation - `max(string $field)`
-+ Top Hits Aggregation - `topHits(array $sorts, int $size = 10, int $from = 0)`
++ Top Hits Aggregation - `topHits(array $sorts, array $columns = ['*'], int $size = 10, int $from = 0)`
 
 ### Options
 ---
