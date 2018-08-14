@@ -38,13 +38,16 @@ class Aggregation
         ];
     }
 
-    public function topHits(array $sorts, int $size = 10, int $from = 0)
+    public function topHits(array $sorts, array $columns = ['*'], int $size = 10, int $from = 0)
     {
         $this->aggregations[$this->name]['top_hits'] = [
             'sort' => $sorts,
             'size' => $size,
             'from' => $from,
         ];
+        if ($columns !== ['*']) {
+            $this->aggregations[$this->name]['top_hits']['_source'] = $columns;
+        }
     }
 
     public function aggs(string $name, $callback)
