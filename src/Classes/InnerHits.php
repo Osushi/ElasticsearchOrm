@@ -12,6 +12,8 @@ class InnerHits
 
     private $sort = [];
 
+    private $source = [];
+
     private $build = [];
 
     public function name(string $name)
@@ -38,6 +40,19 @@ class InnerHits
         return $this;
     }
 
+    public function select()
+    {
+        $args = func_get_args();
+        foreach ($args as $arg) {
+            if (is_array($arg)) {
+                $this->source = array_merge($this->source, $arg);
+            } else {
+                $this->source[] = $arg;
+            }
+        }
+        return $this;
+    }
+
     public function build()
     {
         $build = $this->build;
@@ -58,6 +73,7 @@ class InnerHits
             'size' => $this->take,
             'from' => $this->skip,
             'sort' => $this->sort,
+            '_source' => $this->source,
         ]));
 
         $this->reset();
