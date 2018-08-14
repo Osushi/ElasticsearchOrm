@@ -65,7 +65,7 @@ class Connection
 
     public function newQuery(string $name)
     {
-        $config = $this->config["connections"][$name];
+        $config = $this->config['connections'][$name];
 
         $query = new Query($this->connections[$name]);
         return $query;

@@ -323,7 +323,7 @@ class Query
         return $this;
     }
 
-    public function aggregation(string $name, $callback)
+    public function aggregation(string $name, \Closure $callback)
     {
         if (!is_callback_function($callback)) {
             throw new \Exception("Must be closure on aggregation args");
@@ -337,7 +337,7 @@ class Query
         return $this;
     }
 
-    public function aggs(string $name, $callback)
+    public function aggs(string $name, \Closure $callback)
     {
         return $this->aggregation($name, $callback);
     }
