@@ -114,13 +114,13 @@ abstract class Model
     {
         $connection = new Connection();
         $query = $connection->connection($this->getConnection())->setModel($this);
-        if ($index = $this->index) {
+        if ($index = $this->getIndex()) {
             $query->index($index);
         }
-        if ($type = $this->type) {
+        if ($type = $this->getType()) {
             $query->type($type);
         }
-        if ($mappings = $this->mappings) {
+        if ($mappings = $this->getMappings()) {
             $query->mappings($mappings);
         }
         return $query;
