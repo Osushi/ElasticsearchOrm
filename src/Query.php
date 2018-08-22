@@ -332,7 +332,7 @@ class Query
         $aggregation = new Aggregation($name);
         $callback($aggregation);
 
-        $this->aggregation = $aggregation->build();
+        $this->aggregation = array_merge($this->aggregation, $aggregation->build());
 
         return $this;
     }
