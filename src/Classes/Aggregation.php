@@ -24,6 +24,20 @@ class Aggregation
         ];
     }
 
+    public function valueCount(string $field)
+    {
+        $this->aggregations[$this->name]['value_count'] = [
+            'field' => $field,
+        ];
+    }
+
+    public function cardinality(string $field)
+    {
+        $this->aggregations[$this->name]['cardinality'] = [
+            'field' => $field,
+        ];
+    }
+
     public function min(string $field)
     {
         $this->aggregations[$this->name]['min'] = [
