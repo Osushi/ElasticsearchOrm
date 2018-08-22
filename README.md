@@ -470,6 +470,8 @@ Here are supportted aggregations.
 + Min Aggregation - `min(string $field)`
 + Max Aggregation - `max(string $field)`
 + Top Hits Aggregation - `topHits(array $sorts, array $columns = ['*'], int $size = 10, int $from = 0)`
++ Value Count Aggregation - `valueCount(string $field)`
++ Cardinality Aggregation - `cardinality(string $field)`
 
 ### Options
 ---
