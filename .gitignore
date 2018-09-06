@@ -2,6 +2,7 @@
 composer.phar
 composer.lock
 composer-*.lock
+test.sh
 /vendor
 /tmp
 

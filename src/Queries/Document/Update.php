@@ -17,7 +17,7 @@ class Update implements Query
     private $attributes = [];
 
     public function id(
-        ?string $id
+        string $id
     ) {
         $this->id = $id;
         return $this;

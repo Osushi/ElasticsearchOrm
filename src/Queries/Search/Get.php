@@ -69,7 +69,7 @@ class Get implements Query
     }
 
     public function scroll(
-        ?string $scroll
+        string $scroll
     ) {
         $this->scroll = $scroll;
         return $this;
@@ -81,7 +81,7 @@ class Get implements Query
     }
 
     public function scrollId(
-        ?string $scrollId
+        string $scrollId
     ) {
         $this->scrollId = $scrollId;
         return $this;

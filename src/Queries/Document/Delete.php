@@ -17,7 +17,7 @@ class Delete implements Query
     private $conditions = [];
 
     public function id(
-        ?string $id
+        string $id
     ) {
         $this->id = $id;
         return $this;

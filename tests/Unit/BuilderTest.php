@@ -75,7 +75,9 @@ class BuilderTest extends TestCase
 
     public function testCreateIndex()
     {
+        $this->waitReady('index');
         $actual = $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
 
         $this->assertTrue($actual->acknowledged);
 
@@ -89,15 +91,19 @@ class BuilderTest extends TestCase
 
     public function testDropIndex()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
-        $actual = $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
 
+        $actual = $this->builder->index('index')->dropIndex();
         $this->assertTrue($actual->acknowledged);
     }
 
     public function testExistsIndex()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
 
         $this->assertTrue($this->builder->index('index')->existsIndex());
         $this->assertFalse($this->builder->index('invalid')->existsIndex());
@@ -107,6 +113,7 @@ class BuilderTest extends TestCase
 
     public function testRefreshIndex()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
 
         $class = new \stdClass();
@@ -122,7 +129,9 @@ class BuilderTest extends TestCase
 
     public function testInsert()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
         $actual = $this->builder
                 ->index('index')
                 ->type('type')
@@ -132,7 +141,9 @@ class BuilderTest extends TestCase
         $this->assertTrue(mb_strlen($actual->_id) > 0);
         $this->builder->index('index')->dropIndex();
 
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
         $actual = $this->builder
                 ->index('index')
                 ->type('type')
@@ -145,7 +156,9 @@ class BuilderTest extends TestCase
 
     public function testUpdate()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
         $res = $this->builder
              ->index('index')
              ->type('type')
@@ -168,13 +181,14 @@ class BuilderTest extends TestCase
             2,
             $actual->_version
         );
-
         $this->builder->index('index')->dropIndex();
     }
 
     public function testDelete()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
         $res = $this->builder
              ->index('index')
              ->type('type')
@@ -192,13 +206,14 @@ class BuilderTest extends TestCase
             1,
             $actual->_shards['successful']
         );
-
         $this->builder->index('index')->dropIndex();
     }
 
     public function testDeleteByQuery()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
         for ($i = 1; $i <= 3; $i++) {
             $this->builder
                 ->index('index')
@@ -218,13 +233,14 @@ class BuilderTest extends TestCase
             2,
             $actual->deleted
         );
-
         $this->builder->index('index')->dropIndex();
     }
 
     public function testBulk()
     {
+        $this->waitReady('index1');
         $this->builder->index('index1')->createIndex();
+        $this->builder->index('index1')->refreshIndex();
 
         $actual = $this->builder->index('index1')
                 ->type('type')
@@ -235,14 +251,17 @@ class BuilderTest extends TestCase
                 ]);
 
         $this->assertFalse($actual->errors);
-
         $this->builder->index('index1')->dropIndex();
     }
 
     public function testBulkWithCallback()
     {
+        $this->waitReady('index1');
         $this->builder->index('index1')->createIndex();
+        $this->builder->index('index1')->refreshIndex();
+        $this->waitReady('index2');
         $this->builder->index('index2')->createIndex();
+        $this->builder->index('index2')->refreshIndex();
 
         $actual = $this->builder->index('index1')
                 ->type('type1')
@@ -298,7 +317,9 @@ class BuilderTest extends TestCase
 
     public function testGet()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
 
         $this->builder->index('index')
             ->type('type')
@@ -319,7 +340,9 @@ class BuilderTest extends TestCase
 
     public function testGetWithConditions()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
 
         $this->builder->index('index')
             ->type('type')
@@ -381,15 +404,31 @@ class BuilderTest extends TestCase
         $actual = $this->builder->collapse('group', function ($innerHits) {
             $innerHits->name('categories')->orderBy('category', 'desc')->select('category', 'group')->take(1)->skip(1)->add();
         })->get();
-        $this->assertEquals(3, $actual->first()->getInnerHit('categories')->first()->category);
-        $this->assertEquals(2, $actual->last()->getInnerHit('categories')->last()->category);
+
+        $first = $actual->first()->getInnerHit('categories')->first();
+        if ($first->group === 2) {
+            $this->assertEquals(2, $first->category);
+        }
+        if ($first->group === 1) {
+            $this->assertEquals(3, $first->category);
+        }
+
+        $last = $actual->last()->getInnerHit('categories')->last();
+        if ($last->group === 2) {
+            $this->assertEquals(2, $last->category);
+        }
+        if ($last->group === 1) {
+            $this->assertEquals(3, $last->category);
+        }
 
         $this->builder->index('index')->dropIndex();
     }
 
     public function testCount()
     {
+        $this->waitReady('index');
         $this->builder->index('index')->createIndex();
+        $this->builder->index('index')->refreshIndex();
 
         $this->builder->index('index')
             ->type('type')
@@ -749,6 +788,7 @@ class BuilderTest extends TestCase
             ->mappings($mock->getMappings());
 
         $actual = $mock->execute('index.create', $create);
+        $this->builder->index('index')->refreshIndex();
 
         $this->assertTrue($this->builder->index('index')->existsIndex());
 
@@ -767,6 +807,15 @@ class BuilderTest extends TestCase
     public function testRaw()
     {
         $this->assertTrue($this->builder->raw() instanceof Client);
+    }
+
+    private function waitReady(
+        string $index
+    ) {
+        // Wait, if index is not exists
+        while ($this->builder->index($index)->existsIndex()) {
+            sleep(1);
+        }
     }
 
     public function tearDown()

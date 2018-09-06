@@ -198,11 +198,13 @@ class Builder
     // Document
     public function insert(
         array $attributes,
-        ?string $id = null
+        string $id = null
     ) {
         $insert = new Insert();
+        if (!is_null($id)) {
+            $insert->id($id);
+        }
         $insert->refresh($this->getRefresh())
-            ->id($id)
             ->index($this->getIndex())
             ->type($this->getType())
             ->attributes($attributes);
@@ -225,11 +227,13 @@ class Builder
     }
 
     public function delete(
-        ?string $id = null
+        string $id = null
     ) {
         $delete = new Delete();
+        if (!is_null($id)) {
+            $delete->id($id);
+        }
         $delete->refresh($this->getRefresh())
-            ->id($id)
             ->index($this->getIndex())
             ->type($this->getType())
             ->conditions($this->getConditions());
@@ -251,12 +255,16 @@ class Builder
     public function get()
     {
         $get = new Get();
+        if ($scroll = $this->getScroll()) {
+            $get->scroll($scroll);
+        }
+        if ($scrollId = $this->getScrollId()) {
+            $get->scrollId($scrollId);
+        }
         $get->index($this->getIndex())
             ->type($this->getType())
             ->take($this->getTake())
             ->skip($this->getSkip())
-            ->scroll($this->getScroll())
-            ->scrollId($this->getScrollId())
             ->conditions($this->getConditions());
 
         return $this->execute('search.get', $get);
@@ -451,7 +459,7 @@ class Builder
 
     public function collapse(
         string $field,
-        ?\Closure $callback = null
+        \Closure $callback = null
     ) {
         $this->collapse = [
             'field' => $field,
