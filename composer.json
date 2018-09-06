@@ -38,7 +38,7 @@
     },
     "require-dev": {
         "codedungeon/phpunit-result-printer": "^0.19.13",
-        "phpunit/phpunit": "^7.3",
+        "phpunit/phpunit": "~7.0.0",
         "orchestra/testbench": "~3.6",
         "mockery/mockery": "^1.1"
     }
