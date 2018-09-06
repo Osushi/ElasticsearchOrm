@@ -2,8 +2,16 @@
 
 namespace Osushi\ElasticsearchOrm;
 
-abstract class Model
+use Osushi\ElasticsearchOrm\Collection;
+
+class Model
 {
+    const EXCEPTS = [
+        '_id'
+    ];
+
+    private $attributes = [];
+
     protected $connection;
 
     protected $index;
@@ -12,39 +20,48 @@ abstract class Model
 
     protected $mappings = [];
 
-    private $attributes = [];
+    private $_id;
 
     private $fields = [];
 
     private $inner_hits = [];
 
-    private $excepts = ['_id'];
+    private $isExists = false;
 
-    private $exists = false;
-
-    private $_id;
-
-    public function __construct($attributes = [], $exists = false)
-    {
+    public function __construct(
+        array $attributes = [],
+        bool $isExists = false
+    ) {
         $this->fill($attributes);
-        $this->exists = $exists;
-        $this->connection = $this->getConnection();
+        $this->setConnection($this->getConnection());
+        $this->setIsExists($isExists);
     }
 
-    public function fill(array $attributes)
-    {
+    public function fill(
+        array $attributes
+    ) {
         $this->attributes = $attributes;
+        if (array_key_exists('_id', $this->attributes)) {
+            $this->setId($this->attributes['_id']);
+        }
         return $this;
     }
 
     public function getConnection()
     {
-        return $this->connection ? $this->connection : config("elasticsearch.default");
+        return $this->connection ? $this->connection : config('elasticsearch.default');
     }
 
-    public function setConnection(string $connection)
-    {
+    public function setConnection(
+        string $connection
+    ) {
         $this->connection = $connection;
+    }
+
+    public function setIndex(
+        string $index
+    ) {
+        $this->index = $index;
     }
 
     public function getIndex()
@@ -52,9 +69,10 @@ abstract class Model
         return $this->index;
     }
 
-    public function setIndex(string $index)
-    {
-        $this->index = $index;
+    public function setType(
+        string $type
+    ) {
+        $this->type = $type;
     }
 
     public function getType()
@@ -62,9 +80,10 @@ abstract class Model
         return $this->type;
     }
 
-    public function setType(string $type)
-    {
-        $this->type = $type;
+    public function setMappings(
+        array $mappings
+    ) {
+        $this->mappings = $mappings;
     }
 
     public function getMappings()
@@ -72,9 +91,10 @@ abstract class Model
         return $this->mappings;
     }
 
-    public function setMappings(array $mappings)
-    {
-        $this->mappings = $mappings;
+    public function setId(
+        string $_id
+    ) {
+        $this->_id = $_id;
     }
 
     public function getId()
@@ -82,8 +102,9 @@ abstract class Model
         return $this->_id;
     }
 
-    public function setFields(array $fields)
-    {
+    public function setFields(
+        array $fields
+    ) {
         $this->fields = $fields;
     }
 
@@ -92,8 +113,10 @@ abstract class Model
         return $this->fields;
     }
 
-    public function setInnerHits(string $name, Collection $collection)
-    {
+    public function setInnerHits(
+        string $name,
+        Collection $collection
+    ) {
         $this->inner_hits[$name] = $collection;
     }
 
@@ -102,87 +125,117 @@ abstract class Model
         return $this->inner_hits;
     }
 
-    public function getInnerHit(string $name)
-    {
+    public function getInnerHit(
+        string $name
+    ) {
         if (array_key_exists($name, $this->inner_hits)) {
             return $this->inner_hits[$name];
         }
         return false;
     }
 
-    public function newQuery()
-    {
-        $connection = new Connection();
-        $query = $connection->connection($this->getConnection())->setModel($this);
-        if ($index = $this->getIndex()) {
-            $query->index($index);
-        }
-        if ($type = $this->getType()) {
-            $query->type($type);
-        }
-        if ($mappings = $this->getMappings()) {
-            $query->mappings($mappings);
-        }
-        return $query;
+    public function setIsExists(
+        bool $isExists
+    ) {
+        $this->isExists = $isExists;
     }
 
-    public function save()
+    public function getIsExists()
     {
-        $fields = array_except($this->attributes, $this->excepts);
-
-        if ($this->exists) {
-            $this->newQuery()->id($this->_id)->update($fields);
-        } else {
-            $created = $this->newQuery();
-            $created = $created->insert($fields, $this->_id);
-            $this->attributes['_id'] = $this->_id = $created->_id;
-            $this->exists = true;
-        }
-        return $this;
-    }
-
-    public function delete()
-    {
-        if (!$this->exists) {
-            return false;
-        }
-        $this->newQuery()->id($this->_id)->delete();
-        $this->exists = false;
-        return $this;
+        return $this->isExists;
     }
 
     public function toArray()
     {
-        $attributes = [];
-        foreach ($this->attributes as $name => $value) {
-            $attributes[$name] = $this->attributes[$name];
-        }
-        return array_except($this->attributes, $this->excepts);
+        return $this->attributes;
     }
 
-    public function __set(string $name, $value)
-    {
+    public function __set(
+        string $name,
+        $value
+    ) {
         if ($name == '_id') {
-            $this->_id = $value;
+            $this->setId($value);
         }
         $this->attributes[$name] = $value;
     }
 
-    public function __get(string $name)
-    {
+    public function __get(
+        string $name
+    ) {
         if (array_key_exists($name, $this->attributes)) {
             return $this->attributes[$name];
         }
-        return null;
+        return;
     }
 
-    public function __isset(string $name)
-    {
+    public function __isset(
+        string $name
+    ) {
         return array_key_exists($name, $this->attributes);
     }
 
-    public function __call(string $method, $parameters)
-    {
+    public function __call(
+        string $method,
+        $parameters
+    ) {
         return $this->newQuery()->$method(...$parameters);
+    }
+
+    public function newQuery()
+    {
+        $connection = new Connection();
+        $builder = $connection
+                 ->connect($this->getConnection())
+                 ->setModel($this);
+
+        if ($index = $this->getIndex()) {
+            $builder->index($index);
+        }
+        if ($type = $this->getType()) {
+            $builder->type($type);
+        }
+        if ($mappings = $this->getMappings()) {
+            $builder->mappings($mappings);
+        }
+
+        return $builder;
+    }
+
+    public function save(
+        $refresh = false
+    ) {
+        $fields = array_except($this->attributes, self::EXCEPTS);
+
+        $query = $this->newQuery();
+        if ($refresh) {
+            $query->refresh($refresh);
+        }
+        if ($this->getIsExists()) {
+            $query->update($fields, $this->getId());
+        } else {
+            $results = $query->insert($fields, $this->getId());
+            $this->_id = $results->_id;
+            $this->setIsExists(true);
+        }
+
+        return $this;
+    }
+
+    public function delete(
+        $refresh = false
+    ) {
+        if (!$this->getIsExists()) {
+            return false;
+        }
+
+        $query = $this->newQuery();
+        if ($refresh) {
+            $query->refresh($refresh);
+        }
+        $query->delete($this->getId());
+        $this->setIsExists(false);
+
+        return $this;
     }
 }
