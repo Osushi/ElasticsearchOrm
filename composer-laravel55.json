@@ -1,0 +1,43 @@
+{
+    "name": "osushi/elasticsearch-orm",
+    "license": "MIT",
+    "type": "package",
+    "homepage": "https://github.com/Osushi/ElasticsearchOrm",
+    "authors": [
+        {
+            "name": "Osushi",
+            "homepage": "https://github.com/Osushi",
+            "role": "Author"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "elasticsearch/elasticsearch": "~6.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Osushi\\ElasticsearchOrm\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Osushi\\ElasticsearchOrm\\Providers\\ElasticsearchOrmServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "codedungeon/phpunit-result-printer": "^0.19.13",
+        "phpunit/phpunit": "~6.0.0",
+        "orchestra/testbench": "~3.5.0",
+        "mockery/mockery": "^1.1"
+    }
+}
