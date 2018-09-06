@@ -180,7 +180,9 @@ class ModelTest extends TestCase
 
     public function testSave()
     {
+        $this->waitReady();
         $this->model->createIndex();
+        $this->model->refreshIndex();
         $this->model->fill([
             '_id' => 'id',
             'field' => 'dummy1',
@@ -206,12 +208,13 @@ class ModelTest extends TestCase
         $this->assertEquals('dummy2', $this->model->field);
 
         $this->model->dropIndex();
-        $this->builder->index('index')->refreshIndex();
     }
 
     public function testDelete()
     {
+        $this->waitReady();
         $this->model->createIndex();
+        $this->model->refreshIndex();
         $this->model->fill([
             '_id' => 'id',
             'field' => 'dummy',
@@ -229,6 +232,13 @@ class ModelTest extends TestCase
         $this->assertFalse($this->model->delete('wait_for'));
 
         $this->model->dropIndex();
-        $this->builder->index('index')->refreshIndex();
+    }
+
+    private function waitReady()
+    {
+        // Wait, if index is not exists
+        while ($this->model->existsIndex()) {
+            sleep(1);
+        }
     }
 }
