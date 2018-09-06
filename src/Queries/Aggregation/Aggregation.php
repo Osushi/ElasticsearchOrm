@@ -14,7 +14,7 @@ class Aggregation implements Query
 
     public function __construct(
         string $name,
-        ?string $nest = null
+        string $nest = null
     ) {
         $this->name = $name;
         $this->nest = $nest;
