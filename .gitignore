@@ -1,6 +1,7 @@
 # Composer
 composer.phar
 composer.lock
+composer-*.lock
 /vendor
 /tmp
 
