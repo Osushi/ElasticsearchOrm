@@ -1,7 +1,7 @@
 {
     "name": "osushi/elasticsearch-orm",
-    "description": "[WIP]",
-    "keywords": ["elasticsearch", "es", "orm", "model", "laravel"],
+    "description": "O/R Mapper For ElasticSearch Like a Laravel Eloquent",
+    "keywords": ["elasticsearch", "es", "orm", "model", "laravel", "eloquent"],
     "license": "MIT",
     "type": "package",
     "homepage": "https://github.com/Osushi/ElasticsearchOrm",
@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "php": ">=7.1.0",
+        "php": ">=7.0.0",
         "elasticsearch/elasticsearch": "~6.0.0"
     },
     "autoload": {
@@ -35,10 +35,5 @@
                 "Osushi\\ElasticsearchOrm\\Providers\\ElasticsearchOrmServiceProvider"
             ]
         }
-    },
-    "require-dev": {
-        "phpunit/phpunit": "~7.0.0",
-        "orchestra/testbench": "~3.6",
-        "mockery/mockery": "^1.1"
     }
 }
