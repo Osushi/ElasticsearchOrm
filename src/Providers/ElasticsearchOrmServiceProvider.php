@@ -20,8 +20,5 @@ class ElasticsearchOrmServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->bind('elasticsearch', function () {
-            return new Connection();
-        });
     }
 }
