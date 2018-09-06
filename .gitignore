@@ -2,6 +2,7 @@
 composer.phar
 composer.lock
 /vendor
+/tmp
 
 # MacOS
 .DS_Store

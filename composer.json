@@ -14,7 +14,7 @@
     ],
     "require": {
         "php": ">=7.0.0",
-        "elasticsearch/elasticsearch": "~6.0.1"
+        "elasticsearch/elasticsearch": "~6.0.0"
     },
     "autoload": {
         "psr-4": {
@@ -24,11 +24,22 @@
             "src/helpers.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
                 "Osushi\\ElasticsearchOrm\\Providers\\ElasticsearchOrmServiceProvider"
             ]
         }
+    },
+    "require-dev": {
+        "codedungeon/phpunit-result-printer": "^0.19.13",
+        "phpunit/phpunit": "^7.3",
+        "orchestra/testbench": "~3.6",
+        "mockery/mockery": "^1.1"
     }
 }
