@@ -206,6 +206,7 @@ class ModelTest extends TestCase
         $this->assertEquals('dummy2', $this->model->field);
 
         $this->model->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testDelete()
@@ -228,5 +229,6 @@ class ModelTest extends TestCase
         $this->assertFalse($this->model->delete('wait_for'));
 
         $this->model->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 }

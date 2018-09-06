@@ -85,6 +85,7 @@ class BuilderTest extends TestCase
         );
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testDropIndex()
@@ -93,6 +94,7 @@ class BuilderTest extends TestCase
         $actual = $this->builder->index('index')->dropIndex();
 
         $this->assertTrue($actual->acknowledged);
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testExistsIndex()
@@ -103,6 +105,7 @@ class BuilderTest extends TestCase
         $this->assertFalse($this->builder->index('invalid')->existsIndex());
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testRefreshIndex()
@@ -118,6 +121,7 @@ class BuilderTest extends TestCase
         $this->assertEquals($class, $this->builder->index('index')->refreshIndex());
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testInsert()
@@ -131,6 +135,7 @@ class BuilderTest extends TestCase
 
         $this->assertTrue(mb_strlen($actual->_id) > 0);
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
 
         $this->builder->index('index')->createIndex();
         $actual = $this->builder
@@ -141,6 +146,7 @@ class BuilderTest extends TestCase
 
         $this->assertTrue($actual->_id === 'id');
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testUpdate()
@@ -170,6 +176,7 @@ class BuilderTest extends TestCase
         );
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testDelete()
@@ -194,6 +201,7 @@ class BuilderTest extends TestCase
         );
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testDeleteByQuery()
@@ -220,6 +228,7 @@ class BuilderTest extends TestCase
         );
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testBulk()
@@ -237,6 +246,7 @@ class BuilderTest extends TestCase
         $this->assertFalse($actual->errors);
 
         $this->builder->index('index1')->dropIndex();
+        $this->builder->index('index1')->refreshIndex();
     }
 
     public function testBulkWithCallback()
@@ -257,7 +267,9 @@ class BuilderTest extends TestCase
         $this->assertFalse($actual->errors);
 
         $this->builder->index('index1')->dropIndex();
+        $this->builder->index('index1')->refreshIndex();
         $this->builder->index('index2')->dropIndex();
+        $this->builder->index('index2')->refreshIndex();
     }
 
     public function testScrollAndGetScroll()
@@ -315,6 +327,7 @@ class BuilderTest extends TestCase
         $this->assertEquals(5, $actual->total);
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testGetWithConditions()
@@ -385,6 +398,7 @@ class BuilderTest extends TestCase
         $this->assertEquals(2, $actual->last()->getInnerHit('categories')->last()->category);
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testCount()
@@ -406,6 +420,7 @@ class BuilderTest extends TestCase
         $this->assertEquals(3, $this->builder->where('category', '>=', 3)->count());
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testCollapseAndGetCollapse()
@@ -753,6 +768,7 @@ class BuilderTest extends TestCase
         $this->assertTrue($this->builder->index('index')->existsIndex());
 
         $this->builder->index('index')->dropIndex();
+        $this->builder->index('index')->refreshIndex();
     }
 
     public function testReset()
