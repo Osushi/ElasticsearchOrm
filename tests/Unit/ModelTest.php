@@ -38,7 +38,7 @@ class ModelTest extends TestCase
 
         $this->model->fill(['_id' => 'id']);
         $this->assertEquals(
-            ['_id' => 'id'],
+            [],
             $this->model->toArray()
         );
         $this->assertEquals(
@@ -116,7 +116,6 @@ class ModelTest extends TestCase
         ]);
         $this->assertEquals(
             [
-                '_id' => 'id',
                 'field' => 'dummy',
             ],
             $this->model->toArray()
@@ -136,7 +135,6 @@ class ModelTest extends TestCase
         $this->model->_id = 'id';
         $this->assertEquals(
             [
-                '_id' => 'id',
                 'key' => 'value',
             ],
             $this->model->toArray()
@@ -191,7 +189,6 @@ class ModelTest extends TestCase
         // insert
         $this->assertTrue($this->model->save('wait_for') instanceof ModelExample);
         $this->assertEquals([
-            '_id' => 'id',
             'field' => 'dummy1',
         ], $this->model->toArray());
         $this->assertEquals('id', $this->model->getId());
@@ -201,7 +198,6 @@ class ModelTest extends TestCase
         $this->model->field = 'dummy2';
         $this->assertTrue($this->model->save('wait_for') instanceof ModelExample);
         $this->assertEquals([
-            '_id' => 'id',
             'field' => 'dummy2',
         ], $this->model->toArray());
         $this->assertEquals('id', $this->model->getId());
