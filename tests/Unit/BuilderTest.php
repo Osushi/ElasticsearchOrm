@@ -812,9 +812,14 @@ class BuilderTest extends TestCase
     private function waitReady(
         string $index
     ) {
+        $tries = 1;
         // Wait, if index is not exists
         while ($this->builder->index($index)->existsIndex()) {
             sleep(1);
+            $tries++;
+            if ($tries === 3) {
+                $this->builder->index($index)->dropIndex();
+            }
         }
     }
 
