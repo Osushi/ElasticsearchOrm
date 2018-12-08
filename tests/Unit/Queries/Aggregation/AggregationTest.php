@@ -104,6 +104,20 @@ class AggregationTest extends TestCase
         ], $aggs->getAggregations());
     }
 
+    public function testNested()
+    {
+        $aggs = new Aggregation('name');
+        $aggs->nested('path');
+
+        $this->assertEquals([
+            'name' => [
+                'nested' => [
+                    'path' => 'path',
+                ],
+            ],
+        ], $aggs->getAggregations());
+    }
+
     public function testBuild()
     {
         $aggs = new Aggregation('name');

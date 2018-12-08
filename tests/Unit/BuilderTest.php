@@ -305,6 +305,67 @@ class BuilderTest extends TestCase
             ['field1' => 'desc'],
             ['field2' => 'asc']
         ]);
+
+        $this->assertTrue($this->builder->orderBy('field3', 'desc', 'min') instanceof Builder);
+        $this->assertTrue($this->builder->getOrderBy() === [
+            ['field1' => 'desc'],
+            ['field2' => 'asc'],
+            [
+                'field3' => [
+                    'order' => 'desc',
+                    'mode' => 'min',
+                ],
+            ],
+        ]);
+    }
+
+    public function testOrderByNestAndGetOrderBy()
+    {
+        $builder = new Builder($this->client->build());
+        $this->assertTrue($builder->orderByNest('objects.field1', 'desc', 'min', function ($nest) {
+            $nest->path('objects')->where('objects.field2', '=', 1);
+        }, 6.5) instanceof Builder);
+        $this->assertEquals(
+            [
+                [
+                    'objects.field1' => [
+                        'order' => 'desc',
+                        'mode' => 'min',
+                        'nested' => [
+                            'path' => 'objects',
+                            'filter' => [
+                                'term' => [
+                                    'objects.field2' => 1
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $builder->getOrderBy()
+        );
+
+        $builder = new Builder($this->client->build());
+        $this->assertTrue($builder->orderByNest('objects.field1', 'desc', 'min', function ($nest) {
+            $nest->path('objects')->where('objects.field2', '=', 1);
+        }, 5.6) instanceof Builder);
+        $this->assertEquals(
+            [
+                [
+                    'objects.field1' => [
+                        'order' => 'desc',
+                        'mode' => 'min',
+                        'nested_path'=> 'objects',
+                        'nested_filter'=> [
+                            'term' => [
+                                'objects.field2' => 1
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $builder->getOrderBy()
+        );
     }
 
     public function testSelectAndGetSelect()
@@ -680,6 +741,39 @@ class BuilderTest extends TestCase
             $builder->getConditions()
         );
 
+        $builder = new Builder($this->client->build());
+        $builder->where('objects', 'nested', function ($nested) {
+            $nested->mode('avg')->where('objects.name', '=', 'name');
+        });
+        $this->assertEquals(
+            [
+                'query' => [
+                    'bool' => [
+                        'must' => [
+                            [
+                                'nested' => [
+                                    'score_mode' => 'avg',
+                                    'path' => 'objects',
+                                    'query' => [
+                                        'bool' => [
+                                            'filter' => [
+                                                [
+                                                    'term' => [
+                                                        'objects.name' => 'name',
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $builder->getConditions()
+        );
+
         // wherein
         $builder = new Builder($this->client->build());
         $builder->whereIn('field', [2]);
@@ -772,6 +866,16 @@ class BuilderTest extends TestCase
         $this->assertFalse($mock->isOperator('('));
     }
 
+    public function testIsSortMode()
+    {
+        $mock = m::mock(new Builder($this->client->build()))
+              ->makePartial()
+              ->shouldAllowMockingProtectedMethods();
+
+        $this->assertTrue($mock->isSortMode('min'));
+        $this->assertFalse($mock->isSortMode('invalid'));
+    }
+
     public function testExecute()
     {
         $mock = m::mock(new Builder($this->client->build()))
@@ -812,9 +916,14 @@ class BuilderTest extends TestCase
     private function waitReady(
         string $index
     ) {
+        $tries = 1;
         // Wait, if index is not exists
         while ($this->builder->index($index)->existsIndex()) {
             sleep(1);
+            $tries++;
+            if ($tries === 3) {
+                $this->builder->index($index)->dropIndex();
+            }
         }
     }
 
