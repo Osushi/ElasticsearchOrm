@@ -4,6 +4,7 @@ namespace Osushi\ElasticsearchOrm;
 
 use Elasticsearch\Client;
 use Osushi\ElasticsearchOrm\Model;
+use Osushi\ElasticsearchOrm\Constants\Constant;
 use Osushi\ElasticsearchOrm\Requests\Request;
 use Osushi\ElasticsearchOrm\Responses\Response;
 use Osushi\ElasticsearchOrm\Queries\Query;
@@ -19,13 +20,19 @@ use Osushi\ElasticsearchOrm\Queries\Search\Get;
 use Osushi\ElasticsearchOrm\Queries\Search\ClearScroll;
 use Osushi\ElasticsearchOrm\Queries\Search\Count;
 use Osushi\ElasticsearchOrm\Queries\Search\InnerHits;
+use Osushi\ElasticsearchOrm\Queries\Query\Nested;
 use Osushi\ElasticsearchOrm\Queries\Aggregation\Aggregation;
+use Osushi\ElasticsearchOrm\Queries\Sort\Nested as NestedSort;
 
 class Builder
 {
     const OPERATORS = [
         '=', '!=', '>', '>=', '<', '<=',
-        'like',
+        'like', 'nested',
+    ];
+
+    const SORT_MODE = [
+        'min', 'max', 'sum', 'avg', 'median',
     ];
 
     private $connection;
@@ -347,6 +354,20 @@ class Builder
             ];
         }
 
+        if ($operator === 'nested' && is_callback_function($value)) {
+            $nested = new Nested;
+            $value($nested);
+
+            $body = [];
+            if (!empty($nested->getMode())) {
+                $body['nested']['score_mode'] = $nested->getMode();
+            }
+            $body['nested']['path'] = $name;
+            $body['nested']['query'] = $nested->build();
+
+            $this->must[] = $body;
+        }
+
         return $this;
     }
 
@@ -366,6 +387,15 @@ class Builder
         string $operator
     ) {
         if (in_array($operator, self::OPERATORS)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function isSortMode(
+        string $mode
+    ) {
+        if (in_array($mode, self::SORT_MODE)) {
             return true;
         }
         return false;
@@ -421,11 +451,52 @@ class Builder
 
     public function orderBy(
         string $field,
-        string $order = 'asc'
+        string $order = 'asc',
+        string $mode = ''
     ) {
+        if (!empty($mode) && $this->isSortMode($mode)) {
+            $this->sort[] = [
+                $field => [
+                    'order' => $order,
+                    'mode' => $mode,
+                ],
+            ];
+            return $this;
+        }
+
         $this->sort[] = [
             $field => $order
         ];
+        return $this;
+    }
+
+    public function orderByNest(
+        string $field,
+        string $order,
+        string $mode,
+        \Closure $callback,
+        float $version = null
+    ) {
+        $version = is_null($version) ? Constant::ES_VERSION : $version;
+        $nested = new NestedSort($version);
+        $callback($nested);
+
+        $body = [];
+        $body[$field] = [
+            'order' => $order,
+            'mode' => $mode,
+            'nested' => $nested->build(),
+        ];
+
+        if ($version < 6.1) {
+            $nested = $body[$field]['nested'];
+            unset($body[$field]['nested']);
+            $body[$field]['nested_path'] = $nested['nested_path'];
+            $body[$field]['nested_filter'] = $nested['nested_filter'];
+        }
+
+        $this->sort[] = $body;
+
         return $this;
     }
 

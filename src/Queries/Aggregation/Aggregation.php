@@ -122,4 +122,12 @@ class Aggregation implements Query
             $this->aggregations[$this->getName()]['top_hits']['_source'] = $columns;
         }
     }
+
+    public function nested(
+        string $path
+    ) {
+        $this->aggregations[$this->getName()]['nested'] = [
+            'path' => $path,
+        ];
+    }
 }
