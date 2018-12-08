@@ -17,11 +17,11 @@ $ composer require osushi/elasticsearch-orm:~{version}
 
 ### Version Metrics
 
-||Elasticsearch 5.6.x|Elasticsearch 6.2.x|Elasticsearch 6.3.x|Elasticsearch 6.4.x|Elasticsearch 6.5.x|
-|:---:|:---:|:---:|:---:|:---:|:---:|
-|Laravel 5.5.x|~5.6.0|~6.2.0|~6.3.0|~6.4.0|~6.5.0|
-|Laravel 5.6.x|~5.6.0|~6.2.0|~6.3.0|~6.4.0|~6.5.0|
-|Laravel 5.7.x|~5.6.0|~6.2.0|~6.3.0|~6.4.0|~6.5.0|
+||Elasticsearch 5.6.x|Elasticsearch 6.0.x|Elasticsearch 6.1.x|Elasticsearch 6.2.x|Elasticsearch 6.3.x|Elasticsearch 6.4.x|Elasticsearch 6.5.x|
+|:---:||:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|Laravel 5.5.x|~5.6.0|~6.0.0|~6.1.0|~6.2.0|~6.3.0|~6.4.0|~6.5.0|
+|Laravel 5.6.x|~5.6.0|~6.0.0|~6.1.0|~6.2.0|~6.3.0|~6.4.0|~6.5.0|
+|Laravel 5.7.x|~5.6.0|~6.0.0|~6.1.0|~6.2.0|~6.3.0|~6.4.0|~6.5.0|
 
 e.g.
 ```bash
