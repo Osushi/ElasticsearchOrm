@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 
-require_once str_replace('/tests/Unit', '', __DIR__).'/src/helpers.php';
+require_once dirname(dirname( __DIR__)).'/src/helpers.php';
 
 class HelperTest extends TestCase
 {
