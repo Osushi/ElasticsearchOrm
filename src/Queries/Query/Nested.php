@@ -118,6 +118,18 @@ class Nested implements Query
         return $this;
     }
 
+    public function whereIn(
+        string $name,
+        array $value
+    ) {
+        $this->filter[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
+        return $this;
+    }
+
     protected function isOperator(
         string $operator
     ) {
