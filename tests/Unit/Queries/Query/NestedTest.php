@@ -153,6 +153,29 @@ class NestedTest extends TestCase
         $this->assertNull($nested->getMode());
     }
 
+    public function testBuild_WhereIn()
+    {
+        $this->assertTrue($this->nested->whereIn('field', [2]) instanceof Nested);
+
+        // whereIn
+        $nested = new Nested();
+        $nested->whereIn('field', [2]);
+        $this->assertEquals(
+            [
+                'bool' => [
+                    'filter' => [
+                        [
+                            'terms' => [
+                                'field' => [2],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            $nested->build()
+        );
+    }
+
     public function testIsOperator()
     {
         $mock = m::mock(new Nested())
