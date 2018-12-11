@@ -23,157 +23,167 @@ class NestedTest extends TestCase
         $this->assertTrue($this->nested->getMode() === 'mode');
     }
 
-    public function testBuild_Where()
+    public function testBuild_Query()
     {
+        // response
+        $this->assertTrue($this->nested->match('field', '=', 2) instanceof Nested);
         $this->assertTrue($this->nested->where('field', '=', 2) instanceof Nested);
+        $this->assertTrue($this->nested->orWhere('field', '=', 2) instanceof Nested);
+        $this->assertTrue($this->nested->notWhere('field', '=', 2) instanceof Nested);
 
-        // where
-        $nested = new Nested();
-        $nested->where('field', '=', 2);
-        $this->assertEquals(
-            [
-                'bool' => [
-                    'filter' => [
-                        [
-                            'term' => [
-                                'field' => 2,
+        foreach (['filter' => 'where', 'must' => 'match', 'should' => 'orWhere', 'must_not' => 'notWhere'] as $key => $method) {
+            $nested = new Nested();
+            $nested->$method('field', '=', 2);
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'term' => [
+                                    'field' => 2,
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $nested->build()
-        );
+                $nested->build()
+            );
 
-        $nested = new Nested();
-        $nested->where('field', 2);
-        $this->assertEquals(
-            [
-                'bool' => [
-                    'filter' => [
-                        [
-                            'term' => [
-                                'field' => 2,
+            $nested = new Nested();
+            $nested->$method('field', 2);
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'term' => [
+                                    'field' => 2,
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $nested->build()
-        );
+                $nested->build()
+            );
 
-        $nested = new Nested();
-        $nested->where('field', '>', 2);
-        $this->assertEquals(
-            [
-                'bool' => [
-                    'filter' => [
-                        [
-                            'range' => [
-                                'field' => ['gt' => 2],
+            $nested = new Nested();
+            $nested->$method('field', '>', 2);
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'range' => [
+                                    'field' => ['gt' => 2],
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $nested->build()
-        );
+                $nested->build()
+            );
 
-        $nested = new Nested();
-        $nested->where('field', '>=', 2);
-        $this->assertEquals(
-            [
-                'bool' => [
-                    'filter' => [
-                        [
-                            'range' => [
-                                'field' => ['gte' => 2],
+            $nested = new Nested();
+            $nested->$method('field', '>=', 2);
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'range' => [
+                                    'field' => ['gte' => 2],
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $nested->build()
-        );
+                $nested->build()
+            );
 
-        $nested = new Nested();
-        $nested->where('field', '<', 2);
-        $this->assertEquals(
-            [
-                'bool' => [
-                    'filter' => [
-                        [
-                            'range' => [
-                                'field' => ['lt' => 2],
+            $nested = new Nested();
+            $nested->$method('field', '<', 2);
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'range' => [
+                                    'field' => ['lt' => 2],
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $nested->build()
-        );
+                $nested->build()
+            );
 
-        $nested = new Nested();
-        $nested->where('field', '<=', 2);
-        $this->assertEquals(
-            [
-                'bool' => [
-                    'filter' => [
-                        [
-                            'range' => [
-                                'field' => ['lte' => 2],
+            $nested = new Nested();
+            $nested->$method('field', '<=', 2);
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'range' => [
+                                    'field' => ['lte' => 2],
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $nested->build()
-        );
+                $nested->build()
+            );
 
-        $nested = new Nested();
-        $nested->where('field', 'like', 'test');
-        $this->assertEquals(
-            [
-                'bool' => [
-                    'must' => [
-                        [
-                            'match' => [
-                                'field' => 'test',
+            $nested = new Nested();
+            $nested->$method('field', 'like', 'test');
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'match' => [
+                                    'field' => 'test',
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $nested->build()
-        );
-
+                $nested->build()
+            );
+        }
 
         $this->assertEquals([], $nested->getFilter());
         $this->assertEquals([], $nested->getMust());
+        $this->assertEquals([], $nested->getMustNot());
+        $this->assertEquals([], $nested->getShould());
         $this->assertNull($nested->getMode());
     }
 
     public function testBuild_WhereIn()
     {
         $this->assertTrue($this->nested->whereIn('field', [2]) instanceof Nested);
+        $this->assertTrue($this->nested->orWhereIn('field', [2]) instanceof Nested);
+        $this->assertTrue($this->nested->notWhereIn('field', [2]) instanceof Nested);
 
-        // whereIn
-        $nested = new Nested();
-        $nested->whereIn('field', [2]);
-        $this->assertEquals(
-            [
-                'bool' => [
-                    'filter' => [
-                        [
-                            'terms' => [
-                                'field' => [2],
+
+        foreach (['must' => 'matchIn', 'filter' => 'whereIn', 'should' => 'orWhereIn', 'must_not' => 'notWhereIn'] as $key => $method) {
+            $nested = new Nested();
+            $nested->$method('field', [2]);
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'terms' => [
+                                    'field' => [2],
+                                ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $nested->build()
-        );
+                $nested->build()
+            );
+        }
     }
 
     public function testIsOperator()
