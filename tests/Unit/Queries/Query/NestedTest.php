@@ -166,7 +166,7 @@ class NestedTest extends TestCase
         $this->assertTrue($this->nested->notWhereIn('field', [2]) instanceof Nested);
 
 
-        foreach (['filter' => 'whereIn', 'should' => 'orWhereIn', 'must_not' => 'notWhereIn'] as $key => $method) {
+        foreach (['must' => 'matchIn', 'filter' => 'whereIn', 'should' => 'orWhereIn', 'must_not' => 'notWhereIn'] as $key => $method) {
             $nested = new Nested();
             $nested->$method('field', [2]);
             $this->assertEquals(
