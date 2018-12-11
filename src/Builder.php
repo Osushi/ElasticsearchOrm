@@ -53,6 +53,10 @@ class Builder
 
     private $must = [];
 
+    private $should = [];
+
+    private $mustnot = [];
+
     private $scroll;
 
     private $scrollId;
@@ -150,6 +154,14 @@ class Builder
 
         if (count($this->filter)) {
             $this->conditions['query']['bool']['filter'] = $this->filter;
+        }
+
+        if (count($this->should)) {
+            $this->conditions['query']['bool']['should'] = $this->should;
+        }
+
+        if (count($this->mustnot)) {
+            $this->conditions['query']['bool']['must_not'] = $this->mustnot;
         }
 
         if (count($this->sort)) {
@@ -296,7 +308,48 @@ class Builder
     }
 
     // Conditions
+    public function match(
+        string $name,
+        string $operator = '=',
+        $value = null
+    ) {
+        $this->query('must', $name, $operator, $value);
+
+        return $this;
+    }
+
     public function where(
+        string $name,
+        string $operator = '=',
+        $value = null
+    ) {
+        $this->query('filter', $name, $operator, $value);
+
+        return $this;
+    }
+
+    public function orWhere(
+        string $name,
+        string $operator = '=',
+        $value = null
+    ) {
+        $this->query('should', $name, $operator, $value);
+
+        return $this;
+    }
+
+    public function notWhere(
+        string $name,
+        string $operator = '=',
+        $value = null
+    ) {
+        $this->query('mustnot', $name, $operator, $value);
+
+        return $this;
+    }
+
+    protected function query(
+        string $occur,
         string $name,
         string $operator = '=',
         $value = null
@@ -307,7 +360,7 @@ class Builder
         }
 
         if ($operator === '=') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'term' => [
                     $name => $value
                 ],
@@ -315,7 +368,7 @@ class Builder
         }
 
         if ($operator === '>') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'range' => [
                     $name => ['gt' => $value],
                 ],
@@ -323,7 +376,7 @@ class Builder
         }
 
         if ($operator === '>=') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'range' => [
                     $name => ['gte' => $value],
                 ],
@@ -331,7 +384,7 @@ class Builder
         }
 
         if ($operator === '<') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'range' => [
                     $name => ['lt' => $value],
                 ],
@@ -339,7 +392,7 @@ class Builder
         }
 
         if ($operator === '<=') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'range' => [
                     $name => ['lte' => $value],
                 ],
@@ -347,7 +400,7 @@ class Builder
         }
 
         if ($operator === 'like') {
-            $this->must[] = [
+            $this->$occur[] = [
                 'match' => [
                     $name => $value,
                 ],
@@ -365,9 +418,21 @@ class Builder
             $body['nested']['path'] = $name;
             $body['nested']['query'] = $nested->build();
 
-            $this->must[] = $body;
+            $this->$occur[] = $body;
         }
 
+        return $this;
+    }
+
+    public function matchIn(
+        string $name,
+        array $value
+    ) {
+        $this->must[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
         return $this;
     }
 
@@ -376,6 +441,30 @@ class Builder
         array $value
     ) {
         $this->filter[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
+        return $this;
+    }
+
+    public function orWhereIn(
+        string $name,
+        array $value
+    ) {
+        $this->should[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
+        return $this;
+    }
+
+    public function notWhereIn(
+        string $name,
+        array $value
+    ) {
+        $this->mustnot[] = [
             'terms' => [
                 $name => $value,
             ],
@@ -610,6 +699,8 @@ class Builder
         $this->conditions = [];
         $this->filter = [];
         $this->must = [];
+        $this->should = [];
+        $this->mustnot = [];
         $this->scroll = null;
         $this->scrollId = null;
         $this->take = 10;
