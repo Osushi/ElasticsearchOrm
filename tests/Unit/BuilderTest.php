@@ -602,164 +602,172 @@ class BuilderTest extends TestCase
         );
     }
 
-    public function testGetConditions_Where_WhereIn()
+    public function testGetConditions_Query_WhereIn()
     {
+        // response
+        $this->assertTrue($this->builder->match('field', '=', 2) instanceof Builder);
         $this->assertTrue($this->builder->where('field', '=', 2) instanceof Builder);
+        $this->assertTrue($this->builder->orWhere('field', '=', 2) instanceof Builder);
+        $this->assertTrue($this->builder->notWhere('field', '=', 2) instanceof Builder);
         $this->assertTrue($this->builder->whereIn('field', [2]) instanceof Builder);
+        $this->assertTrue($this->builder->orWhereIn('field', [2]) instanceof Builder);
+        $this->assertTrue($this->builder->notWhereIn('field', [2]) instanceof Builder);
 
         // where
-        $builder = new Builder($this->client->build());
-        $builder->where('field', '=', 2);
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'term' => [
-                                    'field' => 2,
+        foreach (['filter' => 'where', 'must' => 'match', 'should' => 'orWhere', 'must_not' => 'notWhere'] as $key => $method) {
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', '=', 2);
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'term' => [
+                                        'field' => 2,
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
 
-        $builder = new Builder($this->client->build());
-        $builder->where('field', 2);
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'term' => [
-                                    'field' => 2,
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', 2);
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'term' => [
+                                        'field' => 2,
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
 
-        $builder = new Builder($this->client->build());
-        $builder->where('field', '>', 2);
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'range' => [
-                                    'field' => ['gt' => 2],
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', '>', 2);
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'range' => [
+                                        'field' => ['gt' => 2],
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
 
-        $builder = new Builder($this->client->build());
-        $builder->where('field', '>=', 2);
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'range' => [
-                                    'field' => ['gte' => 2],
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', '>=', 2);
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'range' => [
+                                        'field' => ['gte' => 2],
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
 
-        $builder = new Builder($this->client->build());
-        $builder->where('field', '<', 2);
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'range' => [
-                                    'field' => ['lt' => 2],
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', '<', 2);
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'range' => [
+                                        'field' => ['lt' => 2],
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
 
-        $builder = new Builder($this->client->build());
-        $builder->where('field', '<=', 2);
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'range' => [
-                                    'field' => ['lte' => 2],
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', '<=', 2);
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'range' => [
+                                        'field' => ['lte' => 2],
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
 
-        $builder = new Builder($this->client->build());
-        $builder->where('field', 'like', 'test');
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'must' => [
-                            [
-                                'match' => [
-                                    'field' => 'test',
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', 'like', 'test');
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'match' => [
+                                        'field' => 'test',
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
 
-        $builder = new Builder($this->client->build());
-        $builder->where('objects', 'nested', function ($nested) {
-            $nested->mode('avg')->where('objects.name', '=', 'name');
-        });
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'must' => [
-                            [
-                                'nested' => [
-                                    'score_mode' => 'avg',
-                                    'path' => 'objects',
-                                    'query' => [
-                                        'bool' => [
-                                            'filter' => [
-                                                [
-                                                    'term' => [
-                                                        'objects.name' => 'name',
+            $builder = new Builder($this->client->build());
+            $builder->$method('objects', 'nested', function ($nested) {
+                $nested->mode('avg')->where('objects.name', '=', 'name');
+            });
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'nested' => [
+                                        'score_mode' => 'avg',
+                                        'path' => 'objects',
+                                        'query' => [
+                                            'bool' => [
+                                                'filter' => [
+                                                    [
+                                                        'term' => [
+                                                            'objects.name' => 'name',
+                                                        ],
                                                     ],
                                                 ],
                                             ],
@@ -770,35 +778,39 @@ class BuilderTest extends TestCase
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
+        }
 
         // wherein
-        $builder = new Builder($this->client->build());
-        $builder->whereIn('field', [2]);
-        $this->assertEquals(
-            [
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'terms' => [
-                                    'field' => [2],
+        foreach (['filter' => 'whereIn', 'should' => 'orWhereIn', 'must_not' => 'notWhereIn'] as $key => $method) {
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', [2]);
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'terms' => [
+                                        'field' => [2],
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                 ],
-            ],
-            $builder->getConditions()
-        );
+                $builder->getConditions()
+            );
+        }
 
         // all
         $builder = new Builder($this->client->build());
         $builder->where('price', '>', 2000)
             ->where('category', 5)
-            ->where('product', 'like', 'test')
+            ->notWhere('category', '<', 6)
+            ->orWhere('price', '<', 1000)
+            ->match('product', 'like', 'test')
             ->orderBy('price')
             ->collapse('author')
             ->select('field')
@@ -812,13 +824,6 @@ class BuilderTest extends TestCase
                 ],
                 'query' => [
                     'bool' => [
-                        'must' => [
-                            [
-                                'match' => [
-                                    'product' => 'test',
-                                ],
-                            ],
-                        ],
                         'filter' => [
                             [
                                 'range' => [
@@ -830,6 +835,31 @@ class BuilderTest extends TestCase
                             [
                                 'term' => [
                                     'category' => '5',
+                                ],
+                            ],
+                        ],
+                        'must_not' => [
+                            [
+                                'range' => [
+                                    'category' => [
+                                        'lt' => 6,
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'should' => [
+                            [
+                                'range' => [
+                                    'price' => [
+                                        'lt' => 1000,
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'must' => [
+                            [
+                                'match' => [
+                                    'product' => 'test',
                                 ],
                             ],
                         ],
