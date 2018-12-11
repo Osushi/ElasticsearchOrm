@@ -13,9 +13,13 @@ class Nested implements Query
 
     private $mode;
 
+    private $filter = [];
+
     private $must = [];
 
-    private $filter = [];
+    private $should = [];
+
+    private $mustnot = [];
 
     public function mode(
         string $mode
@@ -39,6 +43,16 @@ class Nested implements Query
         return $this->filter;
     }
 
+    public function getShould()
+    {
+        return $this->should;
+    }
+
+    public function getMustNot()
+    {
+        return $this->mustnot;
+    }
+
     public function build(): array
     {
         $conditions = [];
@@ -50,14 +64,65 @@ class Nested implements Query
             $conditions['bool']['filter'] = $this->getFilter();
         }
 
+        if (count($this->should)) {
+            $conditions['bool']['should'] = $this->getShould();
+        }
+
+        if (count($this->mustnot)) {
+            $conditions['bool']['must_not'] = $this->getMustNot();
+        }
+
         $this->mode = null;
         $this->must = [];
         $this->filter = [];
+        $this->should = [];
+        $this->mustnot = [];
 
         return $conditions;
     }
 
+    public function match(
+        string $name,
+        string $operator = '=',
+        $value = null
+    ) {
+        $this->query('must', $name, $operator, $value);
+
+        return $this;
+    }
+
     public function where(
+        string $name,
+        string $operator = '=',
+        $value = null
+    ) {
+        $this->query('filter', $name, $operator, $value);
+
+        return $this;
+    }
+
+    public function orWhere(
+        string $name,
+        string $operator = '=',
+        $value = null
+    ) {
+        $this->query('should', $name, $operator, $value);
+
+        return $this;
+    }
+
+    public function notWhere(
+        string $name,
+        string $operator = '=',
+        $value = null
+    ) {
+        $this->query('mustnot', $name, $operator, $value);
+
+        return $this;
+    }
+
+    protected function query(
+        string $occur,
         string $name,
         string $operator = '=',
         $value = null
@@ -68,7 +133,7 @@ class Nested implements Query
         }
 
         if ($operator === '=') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'term' => [
                     $name => $value
                 ],
@@ -76,7 +141,7 @@ class Nested implements Query
         }
 
         if ($operator === '>') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'range' => [
                     $name => ['gt' => $value],
                 ],
@@ -84,7 +149,7 @@ class Nested implements Query
         }
 
         if ($operator === '>=') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'range' => [
                     $name => ['gte' => $value],
                 ],
@@ -92,7 +157,7 @@ class Nested implements Query
         }
 
         if ($operator === '<') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'range' => [
                     $name => ['lt' => $value],
                 ],
@@ -100,7 +165,7 @@ class Nested implements Query
         }
 
         if ($operator === '<=') {
-            $this->filter[] = [
+            $this->$occur[] = [
                 'range' => [
                     $name => ['lte' => $value],
                 ],
@@ -108,13 +173,61 @@ class Nested implements Query
         }
 
         if ($operator === 'like') {
-            $this->must[] = [
+            $this->$occur[] = [
                 'match' => [
                     $name => $value,
                 ],
             ];
         }
 
+        return $this;
+    }
+
+    public function matchIn(
+        string $name,
+        array $value
+    ) {
+        $this->must[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
+        return $this;
+    }
+
+    public function whereIn(
+        string $name,
+        array $value
+    ) {
+        $this->filter[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
+        return $this;
+    }
+
+    public function orWhereIn(
+        string $name,
+        array $value
+    ) {
+        $this->should[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
+        return $this;
+    }
+
+    public function notWhereIn(
+        string $name,
+        array $value
+    ) {
+        $this->mustnot[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
         return $this;
     }
 
