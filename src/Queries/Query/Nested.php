@@ -183,6 +183,18 @@ class Nested implements Query
         return $this;
     }
 
+    public function matchIn(
+        string $name,
+        array $value
+    ) {
+        $this->must[] = [
+            'terms' => [
+                $name => $value,
+            ],
+        ];
+        return $this;
+    }
+
     public function whereIn(
         string $name,
         array $value
