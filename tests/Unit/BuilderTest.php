@@ -613,8 +613,8 @@ class BuilderTest extends TestCase
         $this->assertTrue($this->builder->orWhereIn('field', [2]) instanceof Builder);
         $this->assertTrue($this->builder->notWhereIn('field', [2]) instanceof Builder);
 
-        // where
         foreach (['filter' => 'where', 'must' => 'match', 'should' => 'orWhere', 'must_not' => 'notWhere'] as $key => $method) {
+            // where
             $builder = new Builder($this->client->build());
             $builder->$method('field', '=', 2);
             $this->assertEquals(
