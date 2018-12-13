@@ -6,6 +6,10 @@ use Osushi\ElasticsearchOrm\Queries\Query;
 
 class Nested implements Query
 {
+    const QUERY_OPTIONS = [
+        'minimum_should_match'
+    ];
+
     const OPERATORS = [
         '=', '!=', '>', '>=', '<', '<=',
         'like'
@@ -20,6 +24,8 @@ class Nested implements Query
     private $should = [];
 
     private $mustnot = [];
+
+    private $queryOptions = [];
 
     public function mode(
         string $mode
@@ -53,6 +59,11 @@ class Nested implements Query
         return $this->mustnot;
     }
 
+    public function getQueryOptions()
+    {
+        return $this->queryOptions;
+    }
+
     public function build(): array
     {
         $conditions = [];
@@ -72,11 +83,18 @@ class Nested implements Query
             $conditions['bool']['must_not'] = $this->getMustNot();
         }
 
+        if (count($this->queryOptions)) {
+            foreach ($this->getQueryOptions() as $key => $value) {
+                $conditions['bool'][$key] = $value;
+            }
+        }
+
         $this->mode = null;
         $this->must = [];
         $this->filter = [];
         $this->should = [];
         $this->mustnot = [];
+        $this->queryOptions = [];
 
         return $conditions;
     }
@@ -183,6 +201,70 @@ class Nested implements Query
         return $this;
     }
 
+    public function matchBetween(
+        string $name,
+        array $range,
+        array $equals = [false, false]
+    ) {
+        $this->between('must', $name, $range, $equals);
+
+        return $this;
+    }
+
+    public function whereBetween(
+        string $name,
+        array $range,
+        array $equals = [false, false]
+    ) {
+        $this->between('filter', $name, $range, $equals);
+
+        return $this;
+    }
+
+    public function orWhereBetween(
+        string $name,
+        array $range,
+        array $equals = [false, false]
+    ) {
+        $this->between('should', $name, $range, $equals);
+
+        return $this;
+    }
+
+    public function notWhereBetween(
+        string $name,
+        array $range,
+        array $equals = [false, false]
+    ) {
+        $this->between('mustnot', $name, $range, $equals);
+
+        return $this;
+    }
+
+    protected function between(
+        string $occur,
+        string $name,
+        array $range,
+        array $equals
+    ) {
+        $g = 'gt';
+        $l = 'lt';
+        if ($equals[0]) {
+            $g = 'gte';
+        }
+        if ($equals[1]) {
+            $l = 'lte';
+        }
+
+        $this->$occur[] = [
+            'range' => [
+                $name => [$g => $range[0], $l => $range[1]],
+            ]
+        ];
+
+        return $this;
+    }
+
     public function matchIn(
         string $name,
         array $value
@@ -231,10 +313,29 @@ class Nested implements Query
         return $this;
     }
 
+    public function queryOption(
+        string $name,
+        $value = null
+    ) {
+        if ($this->isQueryOption($name)) {
+            $this->queryOptions[$name] = $value;
+        }
+        return $this;
+    }
+
     protected function isOperator(
         string $operator
     ) {
         if (in_array($operator, self::OPERATORS)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function isQueryOption(
+        string $name
+    ) {
+        if (in_array($name, self::QUERY_OPTIONS)) {
             return true;
         }
         return false;

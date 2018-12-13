@@ -26,6 +26,10 @@ use Osushi\ElasticsearchOrm\Queries\Sort\Nested as NestedSort;
 
 class Builder
 {
+    const QUERY_OPTIONS = [
+        'minimum_should_match'
+    ];
+
     const OPERATORS = [
         '=', '!=', '>', '>=', '<', '<=',
         'like', 'nested',
@@ -56,6 +60,8 @@ class Builder
     private $should = [];
 
     private $mustnot = [];
+
+    private $queryOptions = [];
 
     private $scroll;
 
@@ -162,6 +168,12 @@ class Builder
 
         if (count($this->mustnot)) {
             $this->conditions['query']['bool']['must_not'] = $this->mustnot;
+        }
+
+        if (count($this->queryOptions)) {
+            foreach ($this->queryOptions as $key => $value) {
+                $this->conditions['query']['bool'][$key] = $value;
+            }
         }
 
         if (count($this->sort)) {
@@ -424,6 +436,70 @@ class Builder
         return $this;
     }
 
+    public function matchBetween(
+        string $name,
+        array $range,
+        array $equals = [false, false]
+    ) {
+        $this->between('must', $name, $range, $equals);
+
+        return $this;
+    }
+
+    public function whereBetween(
+        string $name,
+        array $range,
+        array $equals = [false, false]
+    ) {
+        $this->between('filter', $name, $range, $equals);
+
+        return $this;
+    }
+
+    public function orWhereBetween(
+        string $name,
+        array $range,
+        array $equals = [false, false]
+    ) {
+        $this->between('should', $name, $range, $equals);
+
+        return $this;
+    }
+
+    public function notWhereBetween(
+        string $name,
+        array $range,
+        array $equals = [false, false]
+    ) {
+        $this->between('mustnot', $name, $range, $equals);
+
+        return $this;
+    }
+
+    protected function between(
+        string $occur,
+        string $name,
+        array $range,
+        array $equals
+    ) {
+        $g = 'gt';
+        $l = 'lt';
+        if ($equals[0]) {
+            $g = 'gte';
+        }
+        if ($equals[1]) {
+            $l = 'lte';
+        }
+
+        $this->$occur[] = [
+            'range' => [
+                $name => [$g => $range[0], $l => $range[1]],
+            ]
+        ];
+
+        return $this;
+    }
+
     public function matchIn(
         string $name,
         array $value
@@ -472,10 +548,29 @@ class Builder
         return $this;
     }
 
+    public function queryOption(
+        string $name,
+        $value = null
+    ) {
+        if ($this->isQueryOption($name)) {
+            $this->queryOptions[$name] = $value;
+        }
+        return $this;
+    }
+
     protected function isOperator(
         string $operator
     ) {
         if (in_array($operator, self::OPERATORS)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function isQueryOption(
+        string $name
+    ) {
+        if (in_array($name, self::QUERY_OPTIONS)) {
             return true;
         }
         return false;
@@ -701,6 +796,7 @@ class Builder
         $this->must = [];
         $this->should = [];
         $this->mustnot = [];
+        $this->queryOptions = [];
         $this->scroll = null;
         $this->scrollId = null;
         $this->take = 10;
