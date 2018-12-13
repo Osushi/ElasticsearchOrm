@@ -152,10 +152,30 @@ class NestedTest extends TestCase
             );
         }
 
+        $nested = new Nested();
+        $nested->orWhere('field', '=', 2)->queryOption('minimum_should_match', 1);
+        ;
+        $this->assertEquals(
+            [
+                'bool' => [
+                    'should' => [
+                        [
+                            'term' => [
+                                'field' => 2,
+                            ],
+                        ],
+                    ],
+                    'minimum_should_match' => 1,
+                ],
+            ],
+            $nested->build()
+        );
+
         $this->assertEquals([], $nested->getFilter());
         $this->assertEquals([], $nested->getMust());
         $this->assertEquals([], $nested->getMustNot());
         $this->assertEquals([], $nested->getShould());
+        $this->assertEquals([], $nested->getQueryOptions());
         $this->assertNull($nested->getMode());
     }
 
@@ -186,6 +206,33 @@ class NestedTest extends TestCase
         }
     }
 
+    public function testBuild_Between()
+    {
+        $this->assertTrue($this->nested->matchBetween('field', [2, 4]) instanceof Nested);
+        $this->assertTrue($this->nested->whereBetween('field', [2, 4]) instanceof Nested);
+        $this->assertTrue($this->nested->orWhereBetween('field', [2, 4]) instanceof Nested);
+        $this->assertTrue($this->nested->notWhereBetween('field', [2, 4]) instanceof Nested);
+
+        foreach (['must' => 'matchBetween', 'filter' => 'whereBetween', 'should' => 'orWhereBetween', 'must_not' => 'notWhereBetween'] as $key => $method) {
+            $nested = new Nested();
+            $nested->$method('field', [2, 4], [true, true]);
+            $this->assertEquals(
+                [
+                    'bool' => [
+                        $key => [
+                            [
+                                'range' => [
+                                    'field' => ['gte' => 2, 'lte' => 4],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                $nested->build()
+            );
+        }
+    }
+
     public function testIsOperator()
     {
         $mock = m::mock(new Nested())
@@ -194,6 +241,16 @@ class NestedTest extends TestCase
 
         $this->assertTrue($mock->isOperator('like'));
         $this->assertFalse($mock->isOperator('('));
+    }
+
+    public function testIsQueryOption()
+    {
+        $mock = m::mock(new Nested())
+              ->makePartial()
+              ->shouldAllowMockingProtectedMethods();
+
+        $this->assertTrue($mock->isQueryOption('minimum_should_match'));
+        $this->assertFalse($mock->isQueryOption('('));
     }
 
     public function tearDown()

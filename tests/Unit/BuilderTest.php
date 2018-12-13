@@ -612,6 +612,10 @@ class BuilderTest extends TestCase
         $this->assertTrue($this->builder->whereIn('field', [2]) instanceof Builder);
         $this->assertTrue($this->builder->orWhereIn('field', [2]) instanceof Builder);
         $this->assertTrue($this->builder->notWhereIn('field', [2]) instanceof Builder);
+        $this->assertTrue($this->builder->matchBetween('field', [2, 4]) instanceof Builder);
+        $this->assertTrue($this->builder->whereBetween('field', [2, 4]) instanceof Builder);
+        $this->assertTrue($this->builder->orWhereBetween('field', [2, 4]) instanceof Builder);
+        $this->assertTrue($this->builder->notWhereBetween('field', [2, 4]) instanceof Builder);
 
         foreach (['filter' => 'where', 'must' => 'match', 'should' => 'orWhere', 'must_not' => 'notWhere'] as $key => $method) {
             $builder = new Builder($this->client->build());
@@ -781,6 +785,27 @@ class BuilderTest extends TestCase
             );
         }
 
+        foreach (['must' => 'matchBetween', 'filter' => 'whereBetween', 'should' => 'orWhereBetween', 'must_not' => 'notWhereBetween'] as $key => $method) {
+            $builder = new Builder($this->client->build());
+            $builder->$method('field', [2, 4], [true, true]);
+            $this->assertEquals(
+                [
+                    'query' => [
+                        'bool' => [
+                            $key => [
+                                [
+                                    'range' => [
+                                        'field' => ['gte' => 2, 'lte' => 4],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                $builder->getConditions()
+            );
+        }
+
         foreach (['must' => 'matchIn', 'filter' => 'whereIn', 'should' => 'orWhereIn', 'must_not' => 'notWhereIn'] as $key => $method) {
             $builder = new Builder($this->client->build());
             $builder->$method('field', [2]);
@@ -801,6 +826,26 @@ class BuilderTest extends TestCase
                 $builder->getConditions()
             );
         }
+
+        $builder = new Builder($this->client->build());
+        $builder->orWhere('field', '=', 2)->queryOption('minimum_should_match', 1);
+        $this->assertEquals(
+            [
+                'query' => [
+                    'bool' => [
+                        'should' => [
+                            [
+                                'term' => [
+                                    'field' => 2,
+                                ],
+                            ],
+                        ],
+                        'minimum_should_match' => 1,
+                    ],
+                ],
+            ],
+            $builder->getConditions()
+        );
 
         // all
         $builder = new Builder($this->client->build());
@@ -902,6 +947,16 @@ class BuilderTest extends TestCase
 
         $this->assertTrue($mock->isSortMode('min'));
         $this->assertFalse($mock->isSortMode('invalid'));
+    }
+
+    public function testIsQueryOption()
+    {
+        $mock = m::mock(new Builder($this->client->build()))
+              ->makePartial()
+              ->shouldAllowMockingProtectedMethods();
+
+        $this->assertTrue($mock->isQueryOption('minimum_should_match'));
+        $this->assertFalse($mock->isQueryOption('('));
     }
 
     public function testExecute()

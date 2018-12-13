@@ -3,6 +3,7 @@ composer.phar
 composer.lock
 composer-*.lock
 test.sh
+deploy.sh
 /vendor
 /tmp
 
